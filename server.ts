@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import { Db, MongoClient, MongoClientOptions } from "mongodb";
+import  userRoutes  from './routes/userRoutes'
 dotenv.config();
 
 interface customMongoClientOptions extends MongoClientOptions {
@@ -17,12 +18,13 @@ const options: customMongoClientOptions = {
 const dbName = process.env.MONGO_DB_DATABASE_NAME;
 const dbUrl = process.env.MONGO_DB_DATABASE_URL ?? "";
 
-const app: Application = express();
+const server: Application = express();
 
-app.use(bodyParser.json());
-app.use(express.json());
-app.use(cors());
-app.use(morgan("dev"));
+server.use(bodyParser.json());
+server.use(express.json());
+server.use(cors());
+server.use(morgan("dev"));
+server.use(userRoutes)
 
 export const connect = async (): Promise<Db> => {
   try {
@@ -34,6 +36,4 @@ export const connect = async (): Promise<Db> => {
   }
 };
 
-connect()
-
-export default app;
+export default server;
