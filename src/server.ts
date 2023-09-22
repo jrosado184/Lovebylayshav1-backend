@@ -4,8 +4,14 @@ import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import { Db, MongoClient, MongoClientOptions } from "mongodb";
-import  userRoutes  from './routes/userRoutes'
+import  userRouter  from './routes/userRouter'
+import {auth} from "express-openid-connect"
+import { config } from './auth0/config'
+import expressOpenIdConnect from 'express-openid-connect';
 dotenv.config();
+
+const { requiresAuth } = expressOpenIdConnect;
+
 
 interface customMongoClientOptions extends MongoClientOptions {
   useUnifiedTopology?: boolean;
@@ -24,7 +30,8 @@ server.use(bodyParser.json());
 server.use(express.json());
 server.use(cors());
 server.use(morgan("dev"));
-server.use(userRoutes)
+server.use(userRouter)
+server.use(auth(config))
 
 export const connect = async (): Promise<Db> => {
   try {
@@ -35,5 +42,13 @@ export const connect = async (): Promise<Db> => {
     throw err;
   }
 };
+
+server.get('/', (req, res) => {
+  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
+});
+server.get('/profile', requiresAuth(), (req, res) => {
+  res.send(JSON.stringify(req.oidc.user));
+});
+
 
 export default server;

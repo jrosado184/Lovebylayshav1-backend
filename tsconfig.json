@@ -5,7 +5,8 @@
     "target": "es2017",
     "esModuleInterop": true,
     "outDir": "dist",
-    "strict": true
+    "strict": true,
+    "types": ["express"],
   },
   "include": ["src/**/*", "index.ts", "routes", "server.ts"],
   "exclude": ["node_modules"]
