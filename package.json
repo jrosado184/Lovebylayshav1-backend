@@ -5,8 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest _tests_",
-    "start": "concurrently \"tsc -w\" \"nodemon --es-module-specifier-resolution=node dist/index.js\""
+    "test": "jest _tests_ --watch",
+    "start": "node --experimental-specifier-resolution=node dist/index.js",
+    "dev":"concurrently \"tsc -w\" \"nodemon --es-module-specifier-resolution=node dist/index.js\""
   },
   "keywords": [],
   "author": "",

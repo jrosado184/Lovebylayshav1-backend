@@ -12,10 +12,10 @@ dotenv.config();
 
 const { requiresAuth } = expressOpenIdConnect;
 
-const options = {}
+export const options = {}
 
-const dbName = process.env.MONGO_DB_DATABASE_NAME;
-const dbUrl = process.env.MONGO_DB_DATABASE_URL ?? "";
+export const dbName = process.env.MONGO_DB_DATABASE_NAME;
+export const dbUrl = process.env.MONGO_DB_DATABASE_URL ?? "";
 
 const server: Application = express();
 

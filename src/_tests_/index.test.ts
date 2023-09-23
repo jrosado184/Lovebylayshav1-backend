@@ -1,17 +1,27 @@
-// import { Db } from "mongodb";
-// import server, { connect } from "../server";
-// import request from "supertest";
+import { Db, MongoClient } from "mongodb";
+import server, { options, dbUrl, dbName } from "../server";
+import request from "supertest";
 
-// let db;
+let db;
+let client: MongoClient;
 
-// beforeAll(async () => {
-//   db = await connect();
-// });
+beforeAll(async () => {
+  try {
+    client = await MongoClient.connect(dbUrl, options);
+    db = client.db(dbName);
+  } catch (error) {
+  }
+});
 
-// describe("Server Tests", () => {
-//   it("should successfully start the server", async () => {
-//     // Use supertest to make a test request to your server
-//     const response = await request(server).get("/");
-//     expect(response.status).toBe(200);
-//   });
-// });
+afterAll(async () => {
+  if (client) {
+    await client.close();
+  }
+});
+
+describe("Server Tests", () => {
+  it("should successfully start MongoDB connection before the server", async () => {
+    const response = await request(server).get("/");
+    expect(response.status).toBe(200);
+  });
+});
