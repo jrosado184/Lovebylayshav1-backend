@@ -1,6 +1,3 @@
-
-const AUTH0_SECRET = process?.env?.SECRET;
-
 export const config = {
     authRequired: false,
     auth0Logout: true,

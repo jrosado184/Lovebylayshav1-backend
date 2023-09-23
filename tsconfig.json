@@ -6,7 +6,7 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "strict": true,
-    "types": ["express"],
+    "types": ["express", "jest"],
   },
   "include": ["src/**/*", "index.ts", "routes", "server.ts"],
   "exclude": ["node_modules"]

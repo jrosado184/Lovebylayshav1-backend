@@ -12,14 +12,7 @@ dotenv.config();
 
 const { requiresAuth } = expressOpenIdConnect;
 
-
-interface customMongoClientOptions extends MongoClientOptions {
-  useUnifiedTopology?: boolean;
-}
-
-const options: customMongoClientOptions = {
-    useUnifiedTopology: true,
-};
+const options = {}
 
 const dbName = process.env.MONGO_DB_DATABASE_NAME;
 const dbUrl = process.env.MONGO_DB_DATABASE_URL ?? "";

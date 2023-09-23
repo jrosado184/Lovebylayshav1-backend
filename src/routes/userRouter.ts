@@ -22,10 +22,7 @@ router.post("/api/registerUser", async (req: Request, res: Response) => {
   const db = await connect();
 
   try {
-    const auth0UserId = req.user?.sub;
-
     const newUserInformation = new User({
-      auth0UserId,
       first_name: req.body.first_name,
       last_name: req.body.last_name,
       email: req.body.email,
@@ -41,6 +38,7 @@ router.post("/api/registerUser", async (req: Request, res: Response) => {
     
     res.status(200).json(newUser);
   } catch (err) {
+    console.log(err)
     res.status(500).json({
       error: "An error occurred during adding document of user",
     });
