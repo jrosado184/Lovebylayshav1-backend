@@ -7,7 +7,8 @@
   "scripts": {
     "test": "jest _tests_ --watch",
     "start": "node --es-module-specifier-resolution=node dist/index.js",
-    "dev":"concurrently \"tsc -w\" \"nodemon --es-module-specifier-resolution=node dist/index.js\""
+    "dev":"tsc && node dist/index.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
