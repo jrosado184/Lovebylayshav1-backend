@@ -10,7 +10,7 @@ export interface UserTypes {
     date_of_birth: number
     administrative_rights: boolean
 }
-const registerNewUserSchema = new Schema<UserTypes>({
+export const registerNewUserSchema = new Schema<UserTypes>({
     auth0UserId: { 
       required: true,
       type: String,

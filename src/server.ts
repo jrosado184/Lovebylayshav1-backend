@@ -5,17 +5,20 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import { Db, MongoClient, MongoClientOptions } from "mongodb";
 import  userRouter  from './routes/userRouter'
+import guestUserRouter from "./routes/guestUserRouter"
 import {auth} from "express-openid-connect"
 import { config } from './auth0/config'
 import expressOpenIdConnect from 'express-openid-connect';
+import envconfig from './config'
 dotenv.config();
 
 const { requiresAuth } = expressOpenIdConnect;
 
 export const options = {}
 
-export const dbName = process.env.MONGO_DB_DATABASE_NAME;
-export const dbUrl = process.env.MONGO_DB_DATABASE_URL ?? "";
+export const dbUrl = process.env.MONGO_DATABASE_URL ?? "";
+
+const dbUri = envconfig.dbUri??"";
 
 const server: Application = express();
 
@@ -24,12 +27,13 @@ server.use(express.json());
 server.use(cors());
 server.use(morgan("dev"));
 server.use(userRouter)
+server.use(guestUserRouter)
 server.use(auth(config))
 
 export const connect = async (): Promise<Db> => {
   try {
-    const client = await MongoClient.connect(dbUrl, options);
-    return client.db(dbName);
+    const client = await MongoClient.connect(dbUri, options);
+    return client.db()
   } catch (err) {
     console.error("Failed to connect to MongoDB:", err);
     throw err;

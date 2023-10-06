@@ -1,14 +1,18 @@
-import express, {Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { connect } from "../server";
-import { User } from '../models/userModel'
+import { User } from "../models/userModel";
 import { ObjectId } from "mongodb";
+import { checkIfIdExists, checkIfNewUserHasBookedAsGuest } from "../middleware/userMiddlewares";
 
 const router = express.Router();
 
-router.get("/api/registeredUsers", async (req, res) => {
+router.get("/api/auth/registeredUsers", async (req, res) => {
   const db = await connect();
   try {
-    const allRegisteredUsers = await db.collection("users").find().toArray();
+    const allRegisteredUsers = await db
+      .collection("registered_users")
+      .find()
+      .toArray();
     res.status(200).json(allRegisteredUsers);
   } catch (err) {
     res.status(500).json({
@@ -18,32 +22,39 @@ router.get("/api/registeredUsers", async (req, res) => {
   }
 });
 
-router.post("/api/registerUser", async (req: Request, res: Response) => {
+router.put("/api/auth/registeredUsers/:id", checkIfIdExists, async (req, res) => {
   const db = await connect();
 
+  const upcomingAppointments = await checkIfNewUserHasBookedAsGuest(req, res)
+
+  const dataToupdateUser = {
+    first_name: req.body.first_name,
+    last_name: req.body.last_name,
+    phone_number: req.body.phone_number,
+    appointments: {
+      upcoming: upcomingAppointments || [],
+      past: [],
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   try {
-    const newUserInformation = new User({
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      phone_number: req.body.phone_number,
-      date_of_birth: req.body.date_of_birth,
+    await db
+      .collection("registered_users")
+      .updateOne({ _id: new ObjectId(req.params.id) }, [
+        {
+          $set: { userData: dataToupdateUser },
+        },
+      ]);
+    const user = await db.collection("registered_users").findOne({
+      _id: new ObjectId(req.params.id),
     });
-
-    const addUser = await db.collection("users").insertOne(newUserInformation);
-
-    const newUser = await db
-      .collection("users")
-      .findOne({ _id: new ObjectId(addUser.insertedId) });
-    
-    res.status(200).json(newUser);
+    res.json(user);
   } catch (err) {
-    console.log(err)
-    res.status(500).json({
-      error: "An error occurred during adding document of user",
-    });
+    console.error("Error updating user:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-  
 
 export default router;
