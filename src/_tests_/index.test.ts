@@ -1,5 +1,5 @@
 import { Db, MongoClient } from "mongodb";
-import server, { options, dbUrl} from "../server";
+import server, { options, dbUri} from "../server";
 import request from "supertest";
 
 let db;
@@ -7,7 +7,7 @@ let client: MongoClient;
 
 beforeAll(async () => {
   try {
-    client = await MongoClient.connect(dbUrl, options);
+    client = await MongoClient.connect(dbUri, options);
     db = client.db();
   } catch (error) {
   }

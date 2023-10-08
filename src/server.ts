@@ -16,9 +16,7 @@ const { requiresAuth } = expressOpenIdConnect;
 
 export const options = {}
 
-export const dbUrl = process.env.MONGO_DATABASE_URL ?? "";
-
-const dbUri = envconfig.dbUri??"";
+export const dbUri = envconfig.dbUri??"";
 
 const server: Application = express();
 

@@ -1,50 +1,55 @@
 import dotenv from "dotenv";
-import { Db, MongoClient, Collection } from "mongodb";
-import server from "../server";
-import  request from "supertest";
+import { MongoClient, Collection, ObjectId, Db } from "mongodb";
+import server, { connect, dbUri } from "../server";
+import request from "supertest";
 
 dotenv.config();
 
-const test_db_url = process.env.MONGO_DATABASE_URL ?? "";
-
 describe("Test user auth endpoints", () => {
-    let db: Collection<any>;
+  let db: Collection<any>;
+  let client: any;
 
   beforeAll(async () => {
-    const client = (await MongoClient.connect(test_db_url, {})).db("testing")
-    db = client.collection("registered_users")
+    client = await MongoClient.connect(dbUri, {})
+    db = client.db("testing").collection("registered_users");
+  });
+  
+  beforeEach(async () => {
+    jest.resetModules();
+    await db.deleteMany({});
   });
 
   afterAll(async () => {
     await db.deleteMany({});
+    await client.close()
   });
 
-  beforeEach(async () => {
-    await db.deleteMany({});
-  });
 
   test("PUT, /api/auth/regsteredUsers/:id", async () => {
 
-   const insertUser =  await db.insertOne({
-        _id: "651f4329338f9653c4f66011",
-        connection: "lovebylaysha",
-        client_id: "8GQ4NCt1lVYjQneh1iKnOxgqmMQgiPKP",
-        email: "javierrosado184@gmail.com"
+    const user = await db.insertOne({
+      connection: "testConnection",
+      email: "test@example.com",
+      password: "hashedPassword"
     })
-    const userId = insertUser.insertedId.toString()
+
+    const userId = user.insertedId.toString()
 
     const mockUser = {
-    first_name: "testFirst",
-    last_name: "testLast",
-    phone_number: 12345678,
-    appointments: {
-      upcoming: [],
-      past: [],
-    },
-    createdAt: new Date(),
-    updatedAt: new Date(),
-}
-const response = await request(server).put(`/api/auth/registeredUsers/${userId}`).send(mockUser)
-  });
+      first_name: "testFirst",
+      last_name: "testLast",
+      phone_number: 12345678,
+      appointments: {
+        upcoming: [],
+        past: [],
+      },
+    };
 
+    const response = await request(server)
+      .put(`/api/auth/registeredUsers/${userId}`)
+      .send(mockUser);
+
+      
+    expect(response.body.userData).toMatchObject({first_name: "testFirst"})
+  });
 });

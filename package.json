@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest _tests_ --watch",
+    "test": "tsc && export NODE_ENV=testing && jest _tests_ --detectOpenHandles --watch",
     "dev": "nodemon --watch src -e ts --exec \"tsc && node --es-module-specifier-resolution=node dist/index.js\"",
     "start": "node --es-module-specifier-resolution=node dist/index.js",
     "build": "tsc",
@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.5.1",
     "body-parser": "^1.20.2",
     "concurrently": "^8.2.1",
     "cors": "^2.8.5",
