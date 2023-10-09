@@ -78,7 +78,9 @@ describe("Test user auth endpoints", () => {
       `/api/auth/registeredUsers/${userId}`
     );
     expect(response.status).toBe(404);
-    expect(response.body.message).toBe(`The user with id ${userId} does not exist`)
+    expect(response.body.message).toBe(
+      `The user with id ${userId} does not exist`
+    );
   });
 
   test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
