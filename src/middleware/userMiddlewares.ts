@@ -43,3 +43,15 @@ export const checkIfIdExists = async (
     next();
   }
 };
+
+export const checkIfUserProvidedBody = (req: Request, res: Response, next: NextFunction) => {
+const { first_name, last_name } = req.body
+
+if(!first_name || !last_name) {
+  res.status(400).json({
+    message: "Please provide a first name and last name"
+  }) 
+} else {
+  next()
+}
+} 

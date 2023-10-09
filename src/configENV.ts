@@ -19,22 +19,22 @@ const developmentConfig = {
   
   const environment = process.env.NODE_ENV || 'development';
   
-  let envconfig: { dbUri: string | undefined; appPort: number; };
+  let configENV: { dbUri: string | undefined; appPort: number; };
   
   switch (environment) {
     case 'development':
-      envconfig = developmentConfig;
+      configENV = developmentConfig;
       break;
     case 'testing':
-      envconfig = testingConfig;
+      configENV = testingConfig;
       break;
     case 'production':
-      envconfig = productionConfig;
+      configENV = productionConfig;
       break;
     default:
-      envconfig = developmentConfig;
+      configENV = developmentConfig;
     }
 
-    export default envconfig;
+    export default configENV;
     
     

@@ -3,20 +3,20 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
-import { Db, MongoClient, MongoClientOptions } from "mongodb";
+import { Db, MongoClient } from "mongodb";
 import  userRouter  from './routes/userRouter'
 import guestUserRouter from "./routes/guestUserRouter"
 import {auth} from "express-openid-connect"
 import { config } from './auth0/config'
 import expressOpenIdConnect from 'express-openid-connect';
-import envconfig from './config'
+import configENV from './configENV'
 dotenv.config();
 
 const { requiresAuth } = expressOpenIdConnect;
 
 export const options = {}
 
-export const dbUri = envconfig.dbUri??"";
+export const dbUri = configENV.dbUri??"";
 
 const server: Application = express();
 

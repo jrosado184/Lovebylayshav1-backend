@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { connect } from "../server";
 import { User } from "../models/userModel";
 import { ObjectId } from "mongodb";
-import { checkIfIdExists, checkIfNewUserHasBookedAsGuest } from "../middleware/userMiddlewares";
+import { checkIfIdExists, checkIfNewUserHasBookedAsGuest, checkIfUserProvidedBody } from "../middleware/userMiddlewares";
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.get("/api/auth/registeredUsers", async (req, res) => {
   }
 });
 
-router.put("/api/auth/registeredUsers/:id", checkIfIdExists, async (req, res) => {
+router.put("/api/auth/registeredUsers/:id", checkIfIdExists, checkIfUserProvidedBody, async (req, res) => {
   const db = await connect();
 
   const upcomingAppointments = await checkIfNewUserHasBookedAsGuest(req, res)
