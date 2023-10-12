@@ -50,7 +50,7 @@ describe("Test guest user endpoints", () => {
   };
 
   test("GET /api/auth/guestUsers", async () => {
-    await db.insertMany([mockUser]);
+    await db.insertOne(mockUser);
 
     const response = await request(server).get("/api/auth/guestUsers");
 
@@ -84,5 +84,12 @@ describe("Test guest user endpoints", () => {
       .send(mockUser);
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({first_name: "testFirst"})
+  });
+
+  test("POST, /api/auth/guestUsers, invalid-body", async () => {
+    const response = await request(server)
+      .post("/api/auth/guestUsers")
+      .send({appointment: {year: 2023, month: 5, day: 11}});
+    expect(response.status).toBe(400);
   });
 });
