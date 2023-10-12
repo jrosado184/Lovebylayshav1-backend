@@ -2,6 +2,7 @@ import express from "express";
 import { connect } from "../server";
 import { GuestUser } from "../models/guestUsersModel";
 import { ObjectId } from "mongodb";
+import { checkIfGuestIdExists, checkifGuestProvidedBody } from "../middleware/guestUsersMiddlewares";
 
 const router = express.Router();
 
@@ -17,7 +18,25 @@ router.get("/api/auth/guestUsers", async (req, res) => {
   }
 });
 
-router.post("/api/auth/guestUsers", async (req, res) => {
+router.get("/api/auth/guestUsers/:id", checkIfGuestIdExists, async (req, res) => {
+  const db = await connect();
+
+  try {
+    const userId = req.params.id;
+    const user = await db
+      .collection("guest_users")
+      .findOne({ _id: new ObjectId(userId) });
+    res.json(user);
+  } catch (error) {
+    res.json({
+      message:
+        "There was an error retreiving a user from the guest users collection",
+      error: error,
+    });
+  }
+});
+
+router.post("/api/auth/guestUsers", checkifGuestProvidedBody, async (req, res) => {
   const db = await connect();
 
   try {

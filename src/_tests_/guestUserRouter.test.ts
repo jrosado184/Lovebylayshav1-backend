@@ -23,40 +23,66 @@ describe("Test guest user endpoints", () => {
     await db.deleteMany({});
     await client.close();
   });
-  test("GET /api/auth/guestUsers", async () => {
-    const users = [
-      {
-        first_name: "testFirst",
-        last_name: "testLast",
-        email: "test@example.com",
-        phone_number: 123456789,
-        appointment: {
-          year: 2023,
-          month: 9,
-          day: 29,
-          time: "9:00 PM",
-          services: {
-            nails: {
-              fullSet: true,
-              refill: false,
-              shape: "coffin",
-              length: "Shorties",
-              designs: "Full Frenchies",
-              extras: ["Soak Off"],
-            },
-            pedicure: null,
-            addons: null,
-          },
+
+  const mockUser = {
+    first_name: "testFirst",
+    last_name: "testLast",
+    email: "test@example.com",
+    phone_number: 123456789,
+    appointment: {
+      year: 2023,
+      month: 9,
+      day: 29,
+      time: "9:00 PM",
+      services: {
+        nails: {
+          fullSet: true,
+          refill: false,
+          shape: "coffin",
+          length: "Shorties",
+          designs: "Full Frenchies",
+          extras: ["Soak Off"],
         },
+        pedicure: null,
+        addons: null,
       },
-    ];
-  
-    await db.insertMany(users)
+    },
+  };
 
-    const response = await request(server).get("/api/auth/guestUsers")
+  test("GET /api/auth/guestUsers", async () => {
+    await db.insertMany([mockUser]);
 
-    expect(response.status).toBe(200)
-    expect(response.body).toHaveLength(1)
+    const response = await request(server).get("/api/auth/guestUsers");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+  });
+
+  test("GET /api/auth/guestUsers/:id, success", async () => {
+    const addUser = await db.insertOne(mockUser);
+
+    const userId = addUser.insertedId.toString();
+
+    const response = await request(server).get(
+      `/api/auth/guestUsers/${userId}`
+    );
+
+    expect(response.status).toBe(200);
+  });
+
+  test("GET, /api/auth/guestUsers/:id, non-existing-id", async () => {
+    const userId = "non-existing-id";
+
+    const response = await request(server).get(`/api/auth/guestUsers/${userId}`);
+
+    expect(response.status).toBe(404);
+  });
+
+  test("POST, /api/auth/guestUsers, success", async () => {
+    const response = await request(server)
+      .post("/api/auth/guestUsers")
+      .send(mockUser);
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({first_name: "testFirst"})
   });
 });
-
