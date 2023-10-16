@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { Db, MongoClient } from "mongodb";
 import  userRouter  from './routes/userRouter'
 import guestUserRouter from "./routes/guestUserRouter"
+import appointmentsRouter from './routes/appointmentsRouter'
 import {auth} from "express-openid-connect"
 import { config } from './auth0/config'
 import expressOpenIdConnect from 'express-openid-connect';
@@ -26,6 +27,7 @@ server.use(cors());
 server.use(morgan("dev"));
 server.use(userRouter)
 server.use(guestUserRouter)
+server.use(appointmentsRouter)
 server.use(auth(config))
 
 export const connect = async (): Promise<Db> => {

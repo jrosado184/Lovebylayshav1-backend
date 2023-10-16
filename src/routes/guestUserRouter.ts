@@ -2,7 +2,14 @@ import express from "express";
 import { connect } from "../server";
 import { GuestUser } from "../models/guestUsersModel";
 import { ObjectId } from "mongodb";
-import { checkIfGuestIdExists, checkifGuestProvidedBody } from "../middleware/guestUsersMiddlewares";
+import {
+  checkIfAppoinmentAlreadyExists,
+  checkIfGuestAlreadyExistsAndAddUser,
+  checkIfGuestHasMultipleAppointments,
+  checkIfGuestIdExists,
+  checkifGuestProvidedBody,
+} from "../middleware/guestUsersMiddlewares";
+import { Appointment } from "../models/appointmentsModel";
 
 const router = express.Router();
 
@@ -18,65 +25,67 @@ router.get("/api/auth/guestUsers", async (req, res) => {
   }
 });
 
-router.get("/api/auth/guestUsers/:id", checkIfGuestIdExists, async (req, res) => {
-  const db = await connect();
+router.get(
+  "/api/auth/guestUsers/:id",
+  checkIfGuestIdExists,
+  async (req, res) => {
+    const db = await connect();
 
-  try {
-    const userId = req.params.id;
-    const user = await db
-      .collection("guest_users")
-      .findOne({ _id: new ObjectId(userId) });
-    res.json(user);
-  } catch (error) {
-    res.json({
-      message:
-        "There was an error retreiving a user from the guest users collection",
-      error: error,
-    });
+    try {
+      const userId = req.params.id;
+      const user = await db
+        .collection("guest_users")
+        .findOne({ _id: new ObjectId(userId) });
+      res.json(user);
+    } catch (error) {
+      res.json({
+        message:
+          "There was an error retreiving a user from the guest users collection",
+        error: error,
+      });
+    }
   }
-});
+);
 
-router.post("/api/auth/guestUsers", checkifGuestProvidedBody, async (req, res) => {
-  const db = await connect();
+router.post(
+  "/api/auth/guestUsers",
+  checkifGuestProvidedBody,
+  checkIfGuestAlreadyExistsAndAddUser,
+  checkIfAppoinmentAlreadyExists,
+  async (req, res, next) => {
+    const db = await connect();
 
-  try {
-    const newGuestUser = new GuestUser({
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      phone_number: req.body.phone_number,
-      appointment: {
-        year: req.body.appointment.year,
-        month: req.body.appointment.month,
-        day: req.body.appointment.day,
-        time: req.body.appointment.time,
+    const guestUserId = res.locals.userId;
+
+    try {
+      const appointment = new Appointment({
+        user_id: new ObjectId(guestUserId),
+        year: req.body.year,
+        month: req.body.month,
+        day: req.body.day,
+        time: req.body.time,
         services: {
           nails: {
-            fullSet: req.body.appointment.services.nails.fullSet,
-            refill: req.body.appointment.services.nails.refill,
-            shape: req.body.appointment.services.nails.shape,
-            length: req.body.appointment.services.nails.length,
-            designs: req.body.appointment.services.nails.designs,
-            extras: req.body.appointment.services.nails.extras,
+            fullSet: req.body.services.nails.fullSet,
+            refill: req.body.services.nails.refill,
+            shape: req.body.services.nails.shape,
+            length: req.body.services.nails.length,
+            design: req.body.services.nails.design,
+            extras: req.body.services.nails.extras,
           },
-          pedicure: req.body.appointment.services.pedicure,
-          addons: req.body.appointment.services.addons,
+          pedicure: req.body.services.pedicure,
+          addons: req.body.services.addons,
         },
-      },
-    });
+      });
 
-    const addGUestUser = await db
-      .collection("guest_users")
-      .insertOne(newGuestUser);
-
-    const getAddedUser = await db
-      .collection("guest_users")
-      .findOne({ _id: new ObjectId(addGUestUser.insertedId) });
-    res.status(201).json(getAddedUser);
-  } catch (err) {
-    res.status(500).json(err);
-    console.log(err);
+      const addAppointment = await db
+        .collection("appointments")
+        .insertOne(appointment);
+    } catch (err) {
+      res.status(500).json(err);
+      console.log(err);
+    }
   }
-});
+);
 
 export default router;

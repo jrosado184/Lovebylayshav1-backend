@@ -29,7 +29,6 @@ describe("Test guest user endpoints", () => {
     last_name: "testLast",
     email: "test@example.com",
     phone_number: 123456789,
-    appointment: {
       year: 2023,
       month: 9,
       day: 29,
@@ -45,7 +44,6 @@ describe("Test guest user endpoints", () => {
         },
         pedicure: null,
         addons: null,
-      },
     },
   };
 
@@ -84,6 +82,22 @@ describe("Test guest user endpoints", () => {
       .send(mockUser);
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({first_name: "testFirst"})
+    expect(response.body).not.toMatchObject({  year: 2023,
+      month: 9,
+      day: 29,
+      time: "9:00 PM",
+      services: {
+        nails: {
+          fullSet: true,
+          refill: false,
+          shape: "coffin",
+          length: "Shorties",
+          designs: "Full Frenchies",
+          extras: ["Soak Off"],
+        },
+        pedicure: null,
+        addons: null,
+    },})
   });
 
   test("POST, /api/auth/guestUsers, invalid-body", async () => {
