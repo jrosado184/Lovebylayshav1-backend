@@ -3,6 +3,13 @@ import { connect } from "../server";
 import { NextFunction, Request, Response } from "express";
 import { GuestUser } from "../models/guestUsersModel";
 
+import {
+  getAppointmentId,
+  setAppointmentId,
+  waitForAppointmentId,
+} from "./sharedVariables";
+import { Appointment } from "../models/appointmentsModel";
+
 export const checkIfGuestIdExists = async (
   req: Request,
   res: Response,
@@ -75,18 +82,42 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
   const { email, phone_number } = req.body;
 
   try {
-    const doesGuestUserExist = await db
+    const appointment = new Appointment({
+      user_id: req.body.user_id,
+      year: req.body.year,
+      month: req.body.month,
+      day: req.body.day,
+      time: req.body.time,
+      services: {
+        nails: {
+          fullSet: req.body.services.nails.fullSet,
+          refill: req.body.services.nails.refill,
+          shape: req.body.services.nails.shape,
+          length: req.body.services.nails.length,
+          design: req.body.services.nails.design,
+          extras: req.body.services.nails.extras,
+        },
+        pedicure: req.body.services.pedicure,
+        addons: req.body.services.addons,
+      },
+    });
+
+    const addAppointment = await db
+      .collection("appointments")
+      .insertOne(appointment);
+
+    const existingGuestUsers = await db
       .collection("guest_users")
       .find({
         $or: [{ email: email }, { phone_number: phone_number }],
       })
       .toArray();
 
-    if (doesGuestUserExist.length > 0) {
-      res.locals.userId = doesGuestUserExist[0]._id.toString();
-      next();
+    if (existingGuestUsers.length > 0) {
+      res.locals.guestUserId = existingGuestUsers[0]._id.toString();
     } else {
       const newGuestUserSchema = new GuestUser({
+        appointment_id: addAppointment.insertedId.toString(),
         first_name: req.body.first_name,
         last_name: req.body.last_name,
         email: req.body.email,
@@ -97,16 +128,19 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
         .collection("guest_users")
         .insertOne(newGuestUserSchema);
 
-      const getAddedUser = await db
-        .collection("guest_users")
-        .findOne({ _id: new ObjectId(newGuestUser.insertedId.toString()) });
+        res.locals.guestUserId = newGuestUser.insertedId.toString();
 
-      res.status(201).json(getAddedUser);
-
-      res.locals.userId = newGuestUser.insertedId.toString();
-
-      next();
-    }
+      }
+      
+      await db
+        .collection("appointments")
+        .updateOne(
+          { _id: new ObjectId(addAppointment.insertedId.toString()) },
+          {
+            $set: { user_id: new ObjectId(res.locals.guestUserId)},
+          }
+        );
+    next();
   } catch (error) {
     next(error);
   }
@@ -125,12 +159,7 @@ export const checkIfAppoinmentAlreadyExists = async (
     const appointmentAlreadyExists = await db
       .collection("appointments")
       .find({
-        $and: [
-          { year: year },
-          { month: month },
-          { day: day },
-          { time: time }
-        ]
+        $and: [{ year: year }, { month: month }, { day: day }, { time: time }],
       })
       .toArray();
 
@@ -142,6 +171,6 @@ export const checkIfAppoinmentAlreadyExists = async (
       next();
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
 };

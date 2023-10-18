@@ -1,8 +1,9 @@
+import { ObjectId } from "mongodb";
 import mongoose, { Schema } from "mongoose";
 
 export interface GuestUserTypes {
   auth0UserId: String;
-  appointment_id: string | Number,
+  appointment_id: Object,
   first_name: String;
   last_name: String;
   email: String;
@@ -35,7 +36,7 @@ const registerNewGuestUserSchema = new Schema<GuestUserTypes>({
   },
   appointment_id: {
     required: true,
-    type: String,
+    type: ObjectId,
     unique: true,
   },
   first_name: {

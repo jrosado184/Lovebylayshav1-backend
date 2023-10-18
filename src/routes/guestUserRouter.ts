@@ -5,11 +5,11 @@ import { ObjectId } from "mongodb";
 import {
   checkIfAppoinmentAlreadyExists,
   checkIfGuestAlreadyExistsAndAddUser,
-  checkIfGuestHasMultipleAppointments,
   checkIfGuestIdExists,
   checkifGuestProvidedBody,
 } from "../middleware/guestUsersMiddlewares";
 import { Appointment } from "../models/appointmentsModel";
+import { getAppointmentId, setAppointmentId } from "../middleware/sharedVariables";
 
 const router = express.Router();
 
@@ -50,42 +50,34 @@ router.get(
 router.post(
   "/api/auth/guestUsers",
   checkifGuestProvidedBody,
-  checkIfGuestAlreadyExistsAndAddUser,
   checkIfAppoinmentAlreadyExists,
+  checkIfGuestAlreadyExistsAndAddUser,
   async (req, res, next) => {
     const db = await connect();
 
-    const guestUserId = res.locals.userId;
+    const guestUserId = res.locals.guestUserId;
 
     try {
-      const appointment = new Appointment({
-        user_id: new ObjectId(guestUserId),
-        year: req.body.year,
-        month: req.body.month,
-        day: req.body.day,
-        time: req.body.time,
-        services: {
-          nails: {
-            fullSet: req.body.services.nails.fullSet,
-            refill: req.body.services.nails.refill,
-            shape: req.body.services.nails.shape,
-            length: req.body.services.nails.length,
-            design: req.body.services.nails.design,
-            extras: req.body.services.nails.extras,
-          },
-          pedicure: req.body.services.pedicure,
-          addons: req.body.services.addons,
-        },
-      });
 
-      const addAppointment = await db
-        .collection("appointments")
-        .insertOne(appointment);
+        const guestUser = await db
+          .collection("guest_users")
+          .findOne({ _id: new ObjectId(guestUserId) });
+
+          const guestUserAppointment = await db.collection("appointments").findOne({user_id: new ObjectId(guestUserId)})
+
+          const guestUserWithAppointmentInformation = {
+            guestUser,
+            guestUserAppointment
+          }
+
+        res.status(201).json(guestUserWithAppointmentInformation)
+
     } catch (err) {
       res.status(500).json(err);
       console.log(err);
     }
   }
 );
+
 
 export default router;
