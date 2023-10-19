@@ -3,11 +3,6 @@ import { connect } from "../server";
 import { NextFunction, Request, Response } from "express";
 import { GuestUser } from "../models/guestUsersModel";
 
-import {
-  getAppointmentId,
-  setAppointmentId,
-  waitForAppointmentId,
-} from "./sharedVariables";
 import { Appointment } from "../models/appointmentsModel";
 
 export const checkIfGuestIdExists = async (
@@ -72,6 +67,25 @@ export const checkIfGuestHasMultipleAppointments = async (
   }
 };
 
+export const addAppointmentIdToGuestUser = async (guestUserId: string) => {
+  const db = await connect();
+
+  const getAllAppointmentIdsForGuestUser = await db
+    .collection("appointments")
+    .find({
+      user_id: new ObjectId(guestUserId),
+    })
+    .toArray();
+
+  if (getAllAppointmentIdsForGuestUser.length < 2) {
+    return guestUserId;
+  } else {
+    return getAllAppointmentIdsForGuestUser.map((appointment) => {
+      return appointment._id;
+    });
+  }
+};
+
 export const checkIfGuestAlreadyExistsAndAddUser = async (
   req: Request,
   res: Response,
@@ -115,9 +129,17 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
 
     if (existingGuestUsers.length > 0) {
       res.locals.guestUserId = existingGuestUsers[0]._id.toString();
+      await db.collection("guest_users").updateOne(
+        { _id: new ObjectId(existingGuestUsers[0]._id.toString()) },
+        {
+          $push: {
+            appointment_id: new ObjectId(addAppointment.insertedId.toString()),
+          },
+        }
+      );
     } else {
       const newGuestUserSchema = new GuestUser({
-        appointment_id: addAppointment.insertedId.toString(),
+        appointment_id: new ObjectId(addAppointment.insertedId.toString()),
         first_name: req.body.first_name,
         last_name: req.body.last_name,
         email: req.body.email,
@@ -128,18 +150,15 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
         .collection("guest_users")
         .insertOne(newGuestUserSchema);
 
-        res.locals.guestUserId = newGuestUser.insertedId.toString();
+      res.locals.guestUserId = newGuestUser.insertedId.toString();
+    }
 
+    await db.collection("appointments").updateOne(
+      { _id: new ObjectId(addAppointment.insertedId.toString()) },
+      {
+        $set: { user_id: new ObjectId(res.locals.guestUserId) },
       }
-      
-      await db
-        .collection("appointments")
-        .updateOne(
-          { _id: new ObjectId(addAppointment.insertedId.toString()) },
-          {
-            $set: { user_id: new ObjectId(res.locals.guestUserId)},
-          }
-        );
+    );
     next();
   } catch (error) {
     next(error);

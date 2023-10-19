@@ -1,6 +1,5 @@
 import express from "express";
 import { connect } from "../server";
-import { GuestUser } from "../models/guestUsersModel";
 import { ObjectId } from "mongodb";
 import {
   checkIfAppoinmentAlreadyExists,
@@ -8,8 +7,6 @@ import {
   checkIfGuestIdExists,
   checkifGuestProvidedBody,
 } from "../middleware/guestUsersMiddlewares";
-import { Appointment } from "../models/appointmentsModel";
-import { getAppointmentId, setAppointmentId } from "../middleware/sharedVariables";
 
 const router = express.Router();
 
@@ -58,7 +55,6 @@ router.post(
     const guestUserId = res.locals.guestUserId;
 
     try {
-
         const guestUser = await db
           .collection("guest_users")
           .findOne({ _id: new ObjectId(guestUserId) });

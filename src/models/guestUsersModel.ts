@@ -1,31 +1,12 @@
-import { ObjectId } from "mongodb";
 import mongoose, { Schema } from "mongoose";
 
 export interface GuestUserTypes {
   auth0UserId: String;
-  appointment_id: Object,
+  appointment_id: Array<String> | String;
   first_name: String;
   last_name: String;
   email: String;
   phone_number: Number;
-  // appointment: {
-  //   year: Number;
-  //   month: Number;
-  //   day: Number;
-  //   time: String;
-  //   services: {
-  //     nails: {
-  //       fullSet: Boolean;
-  //       refill: Boolean;
-  //       shape: String;
-  //       length: String;
-  //       design: String;
-  //       extras: Array<String>;
-  //     };
-  //     pedicure: String;
-  //     addons: String;
-  //   };
-  // };
 }
 
 const registerNewGuestUserSchema = new Schema<GuestUserTypes>({
@@ -36,7 +17,7 @@ const registerNewGuestUserSchema = new Schema<GuestUserTypes>({
   },
   appointment_id: {
     required: true,
-    type: ObjectId,
+    type: Array<String>,
     unique: true,
   },
   first_name: {
@@ -55,52 +36,6 @@ const registerNewGuestUserSchema = new Schema<GuestUserTypes>({
     required: true,
     type: Number,
   },
-  // appointment: {
-  //   year: {
-  //     required: true,
-  //     type: Number,
-  //   },
-  //   month: {
-  //     required: true,
-  //     type: Number,
-  //   },
-  //   day: {
-  //     required: true,
-  //     type: Number,
-  //   },
-  //   time: {
-  //     required: true,
-  //     type: String,
-  //   },
-  //   services: {
-  //     nails: {
-  //       fullSet: {
-  //         type: Boolean,
-  //       },
-  //       refill: {
-  //         type: Boolean,
-  //       },
-  //       shape: {
-  //         type: String,
-  //       },
-  //       length: {
-  //         type: String,
-  //       },
-  //       design: {
-  //         type: String,
-  //       },
-  //       extras: {
-  //         type: Array<String>,
-  //       },
-  //     },
-  //     pedicure: {
-  //       type: String,
-  //     },
-  //     addons: {
-  //       type: String,
-  //     },
-  //   },
-  // },
 });
 
 export const GuestUser = mongoose.model<GuestUserTypes>(
