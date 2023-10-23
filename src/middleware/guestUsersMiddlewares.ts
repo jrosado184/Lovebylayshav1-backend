@@ -2,7 +2,6 @@ import { ObjectId } from "mongodb";
 import { connect } from "../server";
 import { NextFunction, Request, Response } from "express";
 import { GuestUser } from "../models/guestUsersModel";
-
 import { Appointment } from "../models/appointmentsModel";
 
 export const checkIfGuestIdExists = async (
@@ -14,11 +13,11 @@ export const checkIfGuestIdExists = async (
 
   const db = await connect();
 
-  const allUsers = await db.collection("guest_users").find().toArray();
+  const userWithExistingId = await db.collection("guest_users").findOne({
+    _id: new ObjectId(id),
+  });
 
-  const userWithIdExists = allUsers.some((a) => String(a._id) === id);
-
-  if (!id || !userWithIdExists) {
+  if (!id || !userWithExistingId) {
     res.status(404).json({ message: `The user with id ${id} does not exist` });
   } else {
     next();
@@ -64,25 +63,6 @@ export const checkIfGuestHasMultipleAppointments = async (
     return firstAppointmentId;
   } catch (error) {
     next(error);
-  }
-};
-
-export const addAppointmentIdToGuestUser = async (guestUserId: string) => {
-  const db = await connect();
-
-  const getAllAppointmentIdsForGuestUser = await db
-    .collection("appointments")
-    .find({
-      user_id: new ObjectId(guestUserId),
-    })
-    .toArray();
-
-  if (getAllAppointmentIdsForGuestUser.length < 2) {
-    return guestUserId;
-  } else {
-    return getAllAppointmentIdsForGuestUser.map((appointment) => {
-      return appointment._id;
-    });
   }
 };
 

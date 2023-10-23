@@ -55,19 +55,20 @@ router.post(
     const guestUserId = res.locals.guestUserId;
 
     try {
-        const guestUser = await db
-          .collection("guest_users")
-          .findOne({ _id: new ObjectId(guestUserId) });
+      const guestUser = await db
+        .collection("guest_users")
+        .findOne({ _id: new ObjectId(guestUserId) });
 
-          const guestUserAppointment = await db.collection("appointments").findOne({user_id: new ObjectId(guestUserId)})
+      const guestUserAppointment = await db
+        .collection("appointments")
+        .findOne({ user_id: new ObjectId(guestUserId) });
 
-          const guestUserWithAppointmentInformation = {
-            guestUser,
-            guestUserAppointment
-          }
+      const guestUserWithAppointmentInformation = {
+        guestUser,
+        guestUserAppointment,
+      };
 
-        res.status(201).json(guestUserWithAppointmentInformation)
-
+      res.status(201).json(guestUserWithAppointmentInformation);
     } catch (err) {
       res.status(500).json(err);
       console.log(err);
@@ -75,5 +76,35 @@ router.post(
   }
 );
 
+router.put("/api/auth/guestUsers/:id", checkIfGuestIdExists, async (req, res) => {
+  const db = await connect();
+  const guestUserId = req.params.id;
+  const guestUserInfo = req.body;
+
+  try {
+
+    const updateGuestUser = await db.collection("guest_users").updateOne(
+      {
+        _id: new ObjectId(guestUserId),
+      },
+      {
+        $set: guestUserInfo,
+      }
+    );
+      const updatedGuestUser = await db.collection("guest_users").findOne({
+        _id: new ObjectId(guestUserId)
+      })
+    
+    if(updateGuestUser.matchedCount === 1) {
+      res.json(updatedGuestUser)
+
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: `There was an error updating the current user with id, ${guestUserId}`,
+      error: error,
+    });
+  }
+});
 
 export default router;
