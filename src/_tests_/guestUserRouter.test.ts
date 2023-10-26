@@ -23,8 +23,8 @@ describe("Test guest user endpoints", () => {
   });
 
   afterAll(async () => {
-    // await db.collection("guest_users").deleteMany({});
-    // await db.collection("appointments").deleteMany({});
+    await db.collection("guest_users").deleteMany({});
+    await db.collection("appointments").deleteMany({});
     await client.close();
   });
 

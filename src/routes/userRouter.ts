@@ -6,6 +6,9 @@ import {
   checkIfNewUserHasBookedAsGuest,
   checkIfUserProvidedBody,
 } from "../middleware/userMiddlewares";
+import bcrypt from "bcrypt";
+import { User } from "../models/userModel";
+import passport from "passport";
 
 const router = express.Router();
 
@@ -25,19 +28,53 @@ router.get("/api/auth/registeredUsers", async (req, res) => {
   }
 });
 
-router.get("/api/auth/registeredUsers/:id", checkIfIdExists, async (req, res) => {
+router.get(
+  "/api/auth/registeredUsers/:id",
+  checkIfIdExists,
+  async (req, res) => {
+    const db = await connect();
+    const userId = req.params.id;
+
+    try {
+      const user = await db
+        .collection("registered_users")
+        .findOne({ _id: new ObjectId(userId) });
+
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({
+        message: `There was an error retreiving the user with id ${userId}`,
+      });
+    }
+  }
+);
+router.post("/api/auth/registeredUsers", async (req, res) => {
   const db = await connect();
-  const userId = req.params.id;
+
+  const newUser = new User({
+    first_name: req.body.first_name,
+    last_name: req.body.last_name,
+    email: req.body.email,
+    password: req.body.password,
+    phone_number: req.body.phone_number,
+    date_of_birth: req.body.date_of_birth,
+    administrative_rights: false,
+  });
 
   try {
-    const user = await db
-      .collection("registered_users")
-      .findOne({ _id: new ObjectId(userId) });
+    const hashedPassword = bcrypt.hash(req.body.password, 10);
 
-    res.json(user);
+    newUser.password = await hashedPassword;
+
+    const addNewUser = await db
+      .collection("registered_users")
+      .insertOne(newUser);
+    res.status(201).json(addNewUser);
+    res.redirect("/dashboard")
   } catch (error) {
     res.status(500).json({
-      message: `There was an error retreiving the user with id ${userId}`,
+      message: "There was an error adding a new user",
+      error: error,
     });
   }
 });
