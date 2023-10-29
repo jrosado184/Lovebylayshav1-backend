@@ -30,8 +30,10 @@ export const checkIfNewUserHasBookedAsGuest = async (
     await db
       .collection("guest_users")
       .findOneAndDelete({ email: req.body.email });
+
+      return appointments.map((appointment) => appointment._id);
+
   }
-  return appointments.map((appointment) => appointment._id);
 };
 
 export const checkIfIdExists = async (
