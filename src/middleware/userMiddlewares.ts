@@ -5,7 +5,7 @@ export const checkIfNewUserHasBookedAsGuest = async (
   req: Request,
   res: Response
 ) => {
-  const db = (await connect());
+  const db = await connect();
 
   const appointments = await db
     .collection("guest_users")
@@ -16,22 +16,22 @@ export const checkIfNewUserHasBookedAsGuest = async (
         },
       },
       {
-        $unwind: "$appointment_id", 
+        $unwind: "$appointment_id",
       },
       {
         $project: {
-          _id:"$appointment_id"
+          _id: "$appointment_id",
         },
       },
     ])
     .toArray();
 
-    if(appointments.length) {
-      await db.collection("guest_users").findOneAndDelete({ email: req.body.email })
-    }
-    return appointments.map((appointment) => appointment._id)
-
-  
+  if (appointments.length) {
+    await db
+      .collection("guest_users")
+      .findOneAndDelete({ email: req.body.email });
+  }
+  return appointments.map((appointment) => appointment._id);
 };
 
 export const checkIfIdExists = async (
@@ -59,12 +59,26 @@ export const checkIfUserProvidedBody = (
   res: Response,
   next: NextFunction
 ) => {
-  const { first_name, last_name } = req.body;
+  const { first_name, last_name, email, phone_number, password } = req.body;
 
-  if (!first_name || !last_name) {
+  if (!first_name || !last_name || !email || !phone_number || !password) {
     res.status(400).json({
       message: "Please provide a first name and last name",
     });
+  } else {
+    next();
+  }
+};
+
+export const checkUpdateBody = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { first_name, last_name, email, phone_number, password } = req.body;
+
+  if (!first_name && !last_name && !email && !phone_number && !password) {
+    res.status(400).json({ message: "Please enter a field to update" });
   } else {
     next();
   }

@@ -5,6 +5,7 @@ import {
   checkIfIdExists,
   checkIfNewUserHasBookedAsGuest,
   checkIfUserProvidedBody,
+  checkUpdateBody,
 } from "../middleware/userMiddlewares";
 import bcrypt from "bcrypt";
 import { User } from "../models/userModel";
@@ -50,7 +51,10 @@ router.get(
 router.post("/api/auth/registeredUsers", async (req, res) => {
   const db = await connect();
 
-  const upcomingAppointments: any = await checkIfNewUserHasBookedAsGuest(req, res);
+  const upcomingAppointments: any = await checkIfNewUserHasBookedAsGuest(
+    req,
+    res
+  );
 
   const newUser = new User({
     first_name: req.body.first_name,
@@ -90,42 +94,33 @@ router.post("/api/auth/registeredUsers", async (req, res) => {
   }
 });
 
-// router.put(
-//   "/api/auth/registeredUsers/:id",
-//   checkIfIdExists,
-//   checkIfUserProvidedBody,
-//   async (req, res) => {
-//     const db = await connect();
+router.put(
+  "/api/auth/registeredUsers/:id",
+  checkIfIdExists,
+  checkUpdateBody,
+  async (req, res) => {
+    const db = await connect();
 
-// const dataToupdateUser = {
-//   first_name: req.body.first_name,
-//   last_name: req.body.last_name,
-//   phone_number: req.body.phone_number,
-//   appointments: {
-//     upcoming: upcomingAppointments || [],
-//     past: [],
-//   },
-//   createdAt: new Date(),
-//   updatedAt: new Date(),
-// };
+    const dataToupdateUser = req.body;
+    const id = req.params.id;
 
-//     try {
-//       await db
-//         .collection("registered_users")
-//         .updateOne({ _id: new ObjectId(req.params.id) }, [
-//           {
-//             $set: { userData: dataToupdateUser },
-//           },
-//         ]);
-//       const user = await db.collection("registered_users").findOne({
-//         _id: new ObjectId(req.params.id),
-//       });
-//       res.json(user);
-//     } catch (err) {
-//       console.error("Error updating user:", err);
-//       res.status(500).json({ error: "Internal Server Error" });
-//     }
-//   }
-// );
+    try {
+        await db
+          .collection("registered_users")
+          .updateOne({ _id: new ObjectId(id) }, [
+            {
+              $set: dataToupdateUser,
+            },
+          ]);
+        const user = await db.collection("registered_users").findOne({
+          _id: new ObjectId(id),
+        });
+        res.json(user);
+    } catch (err) {
+      console.error("Error updating user:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
 
 export default router;

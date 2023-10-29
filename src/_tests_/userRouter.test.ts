@@ -137,91 +137,78 @@ describe("Test user auth endpoints", () => {
     const registeredUserResponse = await request(server)
       .post("/api/auth/registeredUsers")
       .send(mockUser);
-      
 
     expect(registeredUserResponse.status).toBe(201);
 
-    expect(registeredUserResponse.body.appointments.upcoming).toHaveLength(1)
+    expect(registeredUserResponse.body.appointments.upcoming).toHaveLength(1);
 
     const guest = await db
-    .collection("guest_users")
-    .findOne({ _id: new ObjectId(guestUserResponse.body.guestUser._id)});
+      .collection("guest_users")
+      .findOne({ _id: new ObjectId(guestUserResponse.body.guestUser._id) });
 
-    expect(guest).toBe(null)
-
+    expect(guest).toBe(null);
   });
 
-  // test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
-  //   const user = await db.insertOne({
-  //     connection: "testConnection",
-  //     email: "test@example.com",
-  //     password: "hashedPassword",
-  //   });
+  test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
+    const user = await db.collection("registered_users").insertOne(mockUser);
 
-  //   const userId = user.insertedId.toString();
+    const userId = user.insertedId.toString();
 
-  //   const mockUser = {
-  //     first_name: "testFirst",
-  //     last_name: "testLast",
-  //     phone_number: 12345678,
-  //     appointments: {
-  //       upcoming: [],
-  //       past: [],
-  //     },
-  //   };
+    const updateMockUser = {
+      first_name: "test1",
+      last_name: "example1",
+      email: "email1",
+    };
 
-  //   const response = await request(server)
-  //     .put(`/api/auth/registeredUsers/${userId}`)
-  //     .send(mockUser);
+    const response = await request(server)
+      .put(`/api/auth/registeredUsers/${userId}`)
+      .send(updateMockUser);
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      first_name: "test1",
+      last_name: "example1",
+      email: "email1",
+    });
+  });
 
-  //   expect(response.body.userData).toMatchObject({ first_name: "testFirst" });
-  // });
+  test("PUT, /api/auth/registeredUsers/:id, fails if not body request", async () => {
+    const user = await db.collection("registered_users").insertOne(mockUser);
 
-  // test("PUT, /api/auth/registeredUsers/:id, fails if not body request", async () => {
-  //   const user = await db.insertOne({
-  //     connection: "testConnection",
-  //     email: "test@example.com",
-  //     password: "hashedPassword",
-  //   });
+    const userId = user.insertedId.toString();
 
-  //   const userId = user.insertedId.toString();
+    const response = await request(server)
+      .put(`/api/auth/registeredUsers/${userId}`)
+      .send(undefined);
 
-  //   const mockUser = {
-  //     first_name: "testFirt",
-  //   };
-  //   const response = await request(server)
-  //     .put(`/api/auth/registeredUsers/${userId}`)
-  //     .send(mockUser);
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      "Please enter a field to update"
+    );
+  });
 
-  //   expect(response.status).toBe(400);
-  //   expect(response.body.message).toBe(
-  //     "Please provide a first name and last name"
-  //   );
-  // });
+  test("PUT, /api/auth/regsteredUsers/:id, non-existing-id", async () => {
+    // const user = await db.insertOne({
+    //   connection: "testConnection",
+    //   email: "test@example.com",
+    //   password: "hashedPassword",
+    // });
 
-  // test("PUT, /api/auth/regsteredUsers/:id, non-existing-id", async () => {
-  //   const user = await db.insertOne({
-  //     connection: "testConnection",
-  //     email: "test@example.com",
-  //     password: "hashedPassword",
-  //   });
+    const userId = "non-existing-id";
 
-  //   const userId = "non-existing-id";
+    // const mockUser = {
+    //   first_name: "testFirst",
+    //   last_name: "testLast",
+    //   phone_number: 12345678,
+    //   appointments: {
+    //     upcoming: [],
+    //     past: [],
+    //   },
+    // };
 
-  //   const mockUser = {
-  //     first_name: "testFirst",
-  //     last_name: "testLast",
-  //     phone_number: 12345678,
-  //     appointments: {
-  //       upcoming: [],
-  //       past: [],
-  //     },
-  //   };
+    const response = await request(server)
+      .put(`/api/auth/registeredUsers/${userId}`)
+      .send(undefined);
 
-  //   const response = await request(server)
-  //     .put(`/api/auth/registeredUsers/${userId}`)
-  //     .send(mockUser);
-
-  //   expect(response.status).toBe(404);
-  // });
+    expect(response.status).toBe(404);
+  });
 });
