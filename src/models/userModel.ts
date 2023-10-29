@@ -1,15 +1,20 @@
 import mongoose, { Schema } from "mongoose";
 import passportLocalMongoose from "passport-local-mongoose";
 
-
 export interface UserTypes {
   auth0UserId: string;
   first_name: string;
   last_name: string;
   email: string;
-  password: string
+  password: string;
   phone_number: number;
   date_of_birth: number;
+  appointments: {
+    upcoming: Array<string>;
+    past: [];
+  };
+  createdAt: Date;
+  updatedAt: Date;
   administrative_rights: boolean;
 }
 export const registerNewUserSchema = new Schema<UserTypes>({
@@ -42,6 +47,20 @@ export const registerNewUserSchema = new Schema<UserTypes>({
     required: false,
     type: Number,
   },
+  appointments: {
+    upcoming: {
+      type: Array<String>,
+    },
+    past: {
+      type: Array<String>,
+    },
+  },
+  createdAt: {
+    type: Date,
+  },
+  updatedAt: {
+    type: Date,
+  },
   administrative_rights: {
     required: false,
     type: Boolean,
@@ -50,4 +69,7 @@ export const registerNewUserSchema = new Schema<UserTypes>({
 
 registerNewUserSchema.plugin(passportLocalMongoose);
 
-export const User = mongoose.model<UserTypes>("registered_users", registerNewUserSchema);
+export const User = mongoose.model<UserTypes>(
+  "registered_users",
+  registerNewUserSchema
+);

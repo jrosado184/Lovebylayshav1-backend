@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import { connect } from "../server";
 import { NextFunction, Request, Response } from "express";
 
@@ -6,22 +5,33 @@ export const checkIfNewUserHasBookedAsGuest = async (
   req: Request,
   res: Response
 ) => {
-  const db = await connect();
-  let user = await db.collection("registered_users").findOne({
-    _id: new ObjectId(req.params.id),
-  });
+  const db = (await connect());
 
-  const userAppointmentExistsInGuestsCollection = await db
+  const appointments = await db
     .collection("guest_users")
-    .find({
-      email: user?.email,
-    })
+    .aggregate([
+      {
+        $match: {
+          email: req.body.email,
+        },
+      },
+      {
+        $unwind: "$appointment_id", 
+      },
+      {
+        $project: {
+          _id:"$appointment_id"
+        },
+      },
+    ])
     .toArray();
 
-  return userAppointmentExistsInGuestsCollection.map((appointments) => ({
-    _id: appointments._id,
-    appointment: appointments.appointment,
-  }));
+    if(appointments.length) {
+      await db.collection("guest_users").findOneAndDelete({ email: req.body.email })
+    }
+    return appointments.map((appointment) => appointment._id)
+
+  
 };
 
 export const checkIfIdExists = async (
@@ -44,14 +54,18 @@ export const checkIfIdExists = async (
   }
 };
 
-export const checkIfUserProvidedBody = (req: Request, res: Response, next: NextFunction) => {
-const { first_name, last_name } = req.body
+export const checkIfUserProvidedBody = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { first_name, last_name } = req.body;
 
-if(!first_name || !last_name) {
-  res.status(400).json({
-    message: "Please provide a first name and last name"
-  }) 
-} else {
-  next()
-}
-} 
+  if (!first_name || !last_name) {
+    res.status(400).json({
+      message: "Please provide a first name and last name",
+    });
+  } else {
+    next();
+  }
+};

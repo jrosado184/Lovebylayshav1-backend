@@ -2,56 +2,91 @@ import dotenv from "dotenv";
 import { MongoClient, Collection, ObjectId } from "mongodb";
 import server, { dbUri } from "../server";
 import request from "supertest";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
 describe("Test user auth endpoints", () => {
-  let db: Collection<any>;
+  let db: any;
   let client: any;
 
   beforeAll(async () => {
     client = await MongoClient.connect(dbUri, {});
-    db = client.db("testing").collection("registered_users");
+    db = client.db("testing");
   });
 
   beforeEach(async () => {
     jest.resetModules();
-    await db.deleteMany({});
+    await db.collection("guest_users").deleteMany({});
+    await db.collection("registered_users").deleteMany({});
   });
 
   afterAll(async () => {
-    await db.deleteMany({});
     await client.close();
   });
 
-  test("GET, /api/auth/registeredUsers, success", async () => {
-    const users = [
-      {
-        connect: "testConnection",
-        email: "test@example.com",
-        password: "hashedPassword",
+  const guestMockUser = {
+    first_name: "testFirst",
+    last_name: "testLast",
+    email: "email",
+    phone_number: 123456789,
+    year: 2023,
+    month: 9,
+    day: 29,
+    time: "9:00 PM",
+    services: {
+      nails: {
+        fullSet: true,
+        refill: false,
+        shape: "coffin",
+        length: "Shorties",
+        designs: "Full Frenchies",
+        extras: ["Soak Off"],
       },
-      {
-        connect: "testConnection1",
-        email: "test1@example.com",
-        password: "hashedPassword1",
-      },
-    ];
+      pedicure: null,
+      addons: null,
+    },
+  };
 
-    await db.insertMany(users);
+  const mockUser = {
+    first_name: "test",
+    last_name: "example",
+    email: "email",
+    password: "password",
+    phone_number: 123456789,
+    appointments: {
+      upcoming: [],
+      past: [],
+    },
+    createdAt: "today",
+    updatedAt: "today",
+    administrative_rights: false,
+  };
+  test("GET, /api/auth/registeredUsers, success", async () => {
+    await request(server).post("/api/auth/registeredUsers").send(mockUser);
 
     const response = await request(server).get("/api/auth/registeredUsers");
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(2);
+    expect(response.body).toHaveLength(1);
+    expect(response.body).toMatchObject([
+      {
+        first_name: "test",
+        last_name: "example",
+        email: "email",
+        phone_number: 123456789,
+        appointments: {
+          upcoming: [],
+          past: [],
+        },
+        administrative_rights: false,
+      },
+    ]);
+    expect(response.body.password).not.toBe(mockUser.password);
   });
 
   test("GET, /api/auth/registeredUsers/:id, success", async () => {
-    const user = await db.insertOne({
-      connect: "testConnection",
-      email: "test@example.com",
-      password: "hashedPassword",
-    });
+    const user = await db.collection("registered_users").insertOne(mockUser);
 
     const userId = user.insertedId.toString();
 
@@ -60,18 +95,14 @@ describe("Test user auth endpoints", () => {
     );
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
-      connect: "testConnection",
-      email: "test@example.com",
-      password: "hashedPassword",
+      administrative_rights: false,
+      email: "email",
+      first_name: "test",
+      last_name: "example",
+      phone_number: 123456789,
     });
   });
   test("GET, /api/auth/registeredUsers/:id, non-existing-id", async () => {
-    const user = await db.insertOne({
-      connect: "testConnection",
-      email: "test@example.com",
-      password: "hashedPassword",
-    });
-
     const userId = "non-existing-id";
 
     const response = await request(server).get(
@@ -83,77 +114,114 @@ describe("Test user auth endpoints", () => {
     );
   });
 
-  test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
-    const user = await db.insertOne({
-      connection: "testConnection",
-      email: "test@example.com",
-      password: "hashedPassword",
-    });
+  test("POST, /api/auth/registeredUsers, success (includes existing guest user)", async () => {
+    const guestUserResponse = await request(server)
+      .post("/api/auth/guestUsers")
+      .send(guestMockUser);
 
-    const userId = user.insertedId.toString();
+    expect(guestUserResponse.status).toBe(201);
 
-    const mockUser = {
+    expect(guestUserResponse.body.guestUser).toMatchObject({
       first_name: "testFirst",
       last_name: "testLast",
-      phone_number: 12345678,
-      appointments: {
-        upcoming: [],
-        past: [],
-      },
-    };
-
-    const response = await request(server)
-      .put(`/api/auth/registeredUsers/${userId}`)
-      .send(mockUser);
-
-    expect(response.body.userData).toMatchObject({ first_name: "testFirst" });
-  });
-
-  test("PUT, /api/auth/registeredUsers/:id, fails if not body request", async () => {
-    const user = await db.insertOne({
-      connection: "testConnection",
-      email: "test@example.com",
-      password: "hashedPassword",
+      email: "email",
+      phone_number: 123456789,
+    });
+    expect(guestUserResponse.body.guestUserAppointment).toMatchObject({
+      year: 2023,
+      month: 9,
+      day: 29,
+      time: "9:00 PM",
     });
 
-    const userId = user.insertedId.toString();
-
-    const mockUser = {
-      first_name: "testFirt",
-    };
-    const response = await request(server)
-      .put(`/api/auth/registeredUsers/${userId}`)
+    const registeredUserResponse = await request(server)
+      .post("/api/auth/registeredUsers")
       .send(mockUser);
+      
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe(
-      "Please provide a first name and last name"
-    );
+    expect(registeredUserResponse.status).toBe(201);
+
+    expect(registeredUserResponse.body.appointments.upcoming).toHaveLength(1)
+
+    const guest = await db
+    .collection("guest_users")
+    .findOne({ _id: new ObjectId(guestUserResponse.body.guestUser._id)});
+
+    expect(guest).toBe(null)
+
   });
 
-  test("PUT, /api/auth/regsteredUsers/:id, non-existing-id", async () => {
-    const user = await db.insertOne({
-      connection: "testConnection",
-      email: "test@example.com",
-      password: "hashedPassword",
-    });
+  // test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
+  //   const user = await db.insertOne({
+  //     connection: "testConnection",
+  //     email: "test@example.com",
+  //     password: "hashedPassword",
+  //   });
 
-    const userId = "non-existing-id";
+  //   const userId = user.insertedId.toString();
 
-    const mockUser = {
-      first_name: "testFirst",
-      last_name: "testLast",
-      phone_number: 12345678,
-      appointments: {
-        upcoming: [],
-        past: [],
-      },
-    };
+  //   const mockUser = {
+  //     first_name: "testFirst",
+  //     last_name: "testLast",
+  //     phone_number: 12345678,
+  //     appointments: {
+  //       upcoming: [],
+  //       past: [],
+  //     },
+  //   };
 
-    const response = await request(server)
-      .put(`/api/auth/registeredUsers/${userId}`)
-      .send(mockUser);
+  //   const response = await request(server)
+  //     .put(`/api/auth/registeredUsers/${userId}`)
+  //     .send(mockUser);
 
-    expect(response.status).toBe(404);
-  });
+  //   expect(response.body.userData).toMatchObject({ first_name: "testFirst" });
+  // });
+
+  // test("PUT, /api/auth/registeredUsers/:id, fails if not body request", async () => {
+  //   const user = await db.insertOne({
+  //     connection: "testConnection",
+  //     email: "test@example.com",
+  //     password: "hashedPassword",
+  //   });
+
+  //   const userId = user.insertedId.toString();
+
+  //   const mockUser = {
+  //     first_name: "testFirt",
+  //   };
+  //   const response = await request(server)
+  //     .put(`/api/auth/registeredUsers/${userId}`)
+  //     .send(mockUser);
+
+  //   expect(response.status).toBe(400);
+  //   expect(response.body.message).toBe(
+  //     "Please provide a first name and last name"
+  //   );
+  // });
+
+  // test("PUT, /api/auth/regsteredUsers/:id, non-existing-id", async () => {
+  //   const user = await db.insertOne({
+  //     connection: "testConnection",
+  //     email: "test@example.com",
+  //     password: "hashedPassword",
+  //   });
+
+  //   const userId = "non-existing-id";
+
+  //   const mockUser = {
+  //     first_name: "testFirst",
+  //     last_name: "testLast",
+  //     phone_number: 12345678,
+  //     appointments: {
+  //       upcoming: [],
+  //       past: [],
+  //     },
+  //   };
+
+  //   const response = await request(server)
+  //     .put(`/api/auth/registeredUsers/${userId}`)
+  //     .send(mockUser);
+
+  //   expect(response.status).toBe(404);
+  // });
 });

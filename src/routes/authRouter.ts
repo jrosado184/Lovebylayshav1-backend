@@ -10,8 +10,7 @@ router.post(
   "/login",
   passport.authenticate("local"),
   async (req, res, next) => {
-    res.status(200).json({ message: "Authentication successful" });
-    res.redirect("/dashboard")
+    res.status(200).redirect("/dashboard")
   }
 );
 

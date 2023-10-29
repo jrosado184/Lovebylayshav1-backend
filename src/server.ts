@@ -43,16 +43,18 @@ server.use(guestUserRouter);
 server.use(appointmentsRouter);
 server.use(authRouter);
 
-export const options = {};
-
 export const connect = async (): Promise<Db> => {
   try {
-    const client = await MongoClient.connect(dbUri, options);
+    const client = await MongoClient.connect(dbUri, {});
     return client.db();
   } catch (err) {
     console.error("Failed to connect to MongoDB:", err);
     throw err;
   }
 };
+
+server.get("/", (req,res) => {
+  res.status(200).json("Lovebylaysha's server")
+})
 
 export default server;
