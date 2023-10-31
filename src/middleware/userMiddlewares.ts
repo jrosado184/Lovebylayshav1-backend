@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { connect } from "../server";
 import { NextFunction, Request, Response } from "express";
 
@@ -85,3 +86,23 @@ export const checkUpdateBody = (
     next();
   }
 };
+
+export const checkIfUserHasUpcomingAppointments = async (req: Request,res: Response,next: NextFunction) => {
+  const db = await connect();
+  try {
+    const userAppointments = await db
+      .collection("appointments")
+      .find({ user_id: new ObjectId(req.params.id) })
+      .toArray();
+
+    if(userAppointments.length) {
+      res.status(409).json({
+        message: "Cannot delete account with upcoming appointment"
+      })
+    } else {
+      next()
+    }
+  }catch(error) {
+    next(error)
+  }
+}

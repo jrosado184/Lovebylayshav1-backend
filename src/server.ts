@@ -26,16 +26,15 @@ const store = new (MongoDBStore(session))({
 server.use(express.json());
 server.use(cors());
 server.use(morgan("dev"));
-server.use(
-  session({
-    secret: process.env.SECRET ?? "",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 60 * 60 * 1000 },
-    store: store,
-  })
-);
-
+  server.use(
+    session({
+      secret: process.env.SECRET ?? "",
+      resave: false,
+      saveUninitialized: true,
+      cookie: { maxAge: 60 * 60 * 1000 },
+      store: store,
+    })
+  );
 server.use(passport.initialize());
 server.use(passport.session());
 server.use(userRouter);

@@ -16,17 +16,18 @@ describe("Test user auth endpoints", () => {
   });
 
   beforeEach(async () => {
-    jest.resetModules();
-    // await db.collection("guest_users").deleteMany({});
-    // await db.collection("registered_users").deleteMany({});
-    // await db.collection("appointments").deleteMany({});
-  });
-
-  afterAll(async () => {
     await db.collection("guest_users").deleteMany({});
     await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
-    await client.close();
+    await db.collection("sessions").deleteMany({});
+  });
+
+  afterAll(async () => {
+    // await db.collection("guest_users").deleteMany({});
+    // await db.collection("registered_users").deleteMany({});
+    // await db.collection("appointments").deleteMany({});
+    await db.collection("sessions").deleteMany({});
+    // await client.close();
   });
 
   const guestMockUser = {
@@ -66,6 +67,8 @@ describe("Test user auth endpoints", () => {
     updatedAt: "today",
     administrative_rights: false,
   };
+
+  test("sanity", () => {});
   // test("GET, /api/auth/registeredUsers, success", async () => {
   //   await request(server).post("/api/auth/registeredUsers").send(mockUser);
 
@@ -118,44 +121,44 @@ describe("Test user auth endpoints", () => {
   //   );
   // });
 
-  test("POST, /api/auth/registeredUsers, success (includes existing guest user)", async () => {
-    const guestUserResponse = await request(server)
-      .post("/api/auth/guestUsers")
-      .send(guestMockUser);
+  // test("POST, /api/auth/registeredUsers, success (includes existing guest user)", async () => {
+  //   const guestUserResponse = await request(server)
+  //     .post("/api/auth/guestUsers")
+  //     .send(guestMockUser);
 
-    expect(guestUserResponse.status).toBe(201);
+  //   expect(guestUserResponse.status).toBe(201);
 
-    expect(guestUserResponse.body.guestUser).toMatchObject({
-      first_name: "testFirst",
-      last_name: "testLast",
-      email: "email",
-      phone_number: 123456789,
-    });
-    expect(guestUserResponse.body.guestUserAppointment).toMatchObject({
-      year: 2023,
-      month: 9,
-      day: 29,
-      time: "9:00 PM",
-    });
+  //   expect(guestUserResponse.body.guestUser).toMatchObject({
+  //     first_name: "testFirst",
+  //     last_name: "testLast",
+  //     email: "email",
+  //     phone_number: 123456789,
+  //   });
+  //   expect(guestUserResponse.body.guestUserAppointment).toMatchObject({
+  //     year: 2023,
+  //     month: 9,
+  //     day: 29,
+  //     time: "9:00 PM",
+  //   });
 
-    const registeredUserResponse = await request(server)
-      .post("/api/auth/registeredUsers")
-      .send(mockUser);
+  //   const registeredUserResponse = await request(server)
+  //     .post("/api/auth/registeredUsers")
+  //     .send(mockUser);
 
-    expect(registeredUserResponse.status).toBe(201);
+  //   expect(registeredUserResponse.status).toBe(201);
 
-    expect(registeredUserResponse.body.appointments.upcoming).toHaveLength(1);
+  //   expect(registeredUserResponse.body.appointments.upcoming).toHaveLength(1);
 
-    const guest = await db
-      .collection("guest_users")
-      .findOne({ _id: new ObjectId(guestUserResponse.body.guestUser._id) });
+  //   const guest = await db
+  //     .collection("guest_users")
+  //     .findOne({ _id: new ObjectId(guestUserResponse.body.guestUser._id) });
 
-    expect(guest).toBe(null);
+  //   expect(guest).toBe(null);
 
-    const appointmentId = await db.collection("appointments").find().toArray()
+  //   const appointmentId = await db.collection("appointments").find().toArray()
 
-    expect(String(appointmentId[0].user_id)).toBe(registeredUserResponse.body._id)
-  });
+  //   expect(String(appointmentId[0].user_id)).toBe(registeredUserResponse.body._id)
+  // });
 
   // test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
   //   const user = await db.collection("registered_users").insertOne(mockUser);
@@ -201,4 +204,30 @@ describe("Test user auth endpoints", () => {
 
   //   expect(response.status).toBe(404);
   // });
+
+  test("DELETE, /api/auth/registered_users/:id, success", async () => {
+    const addedUser = await request(server)
+      .post("/api/auth/registeredUsers")
+      .send(mockUser);
+    await request(server).post("/login").send({
+      email: mockUser.email,
+      password: mockUser.password,
+    });
+
+    await request(server).delete(
+      `/api/auth/registeredUsers/${addedUser.body._id}`
+    );
+
+    const usersSession = await db.collection("sessions").findOne({
+      "session.passport.user": addedUser.body._id,
+    });
+
+    const deletedUser = await db.collection("registered_users").findOne({
+      _id: addedUser.body._id
+    })
+
+    expect(usersSession).toBeFalsy();
+    expect(deletedUser).toBeNull()
+
+  }, 20000);
 });

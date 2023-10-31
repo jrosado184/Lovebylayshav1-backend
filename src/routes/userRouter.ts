@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import {
   checkIfIdExists,
   checkIfNewUserHasBookedAsGuest,
+  checkIfUserHasUpcomingAppointments,
   checkIfUserProvidedBody,
   checkUpdateBody,
 } from "../middleware/userMiddlewares";
@@ -89,18 +90,18 @@ router.post(
         .collection("registered_users")
         .findOne({ _id: new ObjectId(addNewUser.insertedId) });
 
-     if(upcomingAppointments) {
-      for (const appointmentId of upcomingAppointments) {
-        await db.collection("appointments").updateOne(
-          { _id: new ObjectId(appointmentId) },
-          {
-            $set: {
-              user_id: user?._id,
-            },
-          }
-        );
+      if (upcomingAppointments) {
+        for (const appointmentId of upcomingAppointments) {
+          await db.collection("appointments").updateOne(
+            { _id: new ObjectId(appointmentId) },
+            {
+              $set: {
+                user_id: user?._id,
+              },
+            }
+          );
+        }
       }
-     }
       res.status(201).json(user);
     } catch (error) {
       res.status(500).json({
@@ -136,6 +137,31 @@ router.put(
     } catch (err) {
       console.error("Error updating user:", err);
       res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+);
+
+router.delete(
+  "/api/auth/registeredUsers/:id",
+  checkIfUserHasUpcomingAppointments,
+  async (req, res, next) => {
+    const db = await connect();
+    try {
+      const deleteRegisteredUser = await db
+        .collection("registered_users")
+        .deleteOne({
+          _id: new ObjectId(req.params.id),
+        });
+      if (deleteRegisteredUser.deletedCount === 1) {
+        await db.collection("sessions").findOneAndDelete({
+          "session.passport.user": req.params.id,
+        });
+        res.json("User was successfully deleted");
+      }
+    } catch (error) {
+      res.status(500).json({
+        error: error,
+      });
     }
   }
 );
