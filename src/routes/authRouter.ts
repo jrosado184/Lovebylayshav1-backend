@@ -1,8 +1,8 @@
 import { Router } from "express";
 import passport from "passport";
-import "./../passport-config";
+import "./../passport-config.js";
 import { ObjectId } from "mongodb";
-import { connect } from "../server";
+import { connect } from "../server.js";
 
 const router = Router();
 

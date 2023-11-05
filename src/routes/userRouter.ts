@@ -1,5 +1,5 @@
 import express from "express";
-import { connect } from "../server";
+import { connect } from "../server.js";
 import { ObjectId } from "mongodb";
 import {
   checkIfIdExists,
@@ -7,9 +7,9 @@ import {
   checkIfUserHasUpcomingAppointments,
   checkIfUserProvidedBody,
   checkUpdateBody,
-} from "../middleware/userMiddlewares";
+} from "../middleware/userMiddlewares.js";
 import bcrypt from "bcrypt";
-import { User } from "../models/userModel";
+import { User } from "../models/userModel.js";
 
 const router = express.Router();
 

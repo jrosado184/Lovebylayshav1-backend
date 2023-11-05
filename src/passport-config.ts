@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { connect } from "./server"; // Assuming you have a connect function to establish a database connection
+import { connect } from "./server.js"; // Assuming you have a connect function to establish a database connection
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 

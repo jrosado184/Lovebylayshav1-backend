@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { connect } from "../server";
+import { connect } from "../server.js";
 import { NextFunction, Request, Response } from "express";
 
 export const checkIfNewUserHasBookedAsGuest = async (

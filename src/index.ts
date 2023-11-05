@@ -1,4 +1,4 @@
-import server, { connect } from "./server"
+import server from "./server.js"
 
 const port = process.env.PORT || 9000;
 server.listen(port, () => {

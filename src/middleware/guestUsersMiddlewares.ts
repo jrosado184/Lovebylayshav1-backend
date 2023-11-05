@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
-import { connect } from "../server";
+import { connect } from "../server.js";
 import { NextFunction, Request, Response } from "express";
-import { GuestUser } from "../models/guestUsersModel";
-import { Appointment } from "../models/appointmentsModel";
+import { GuestUser } from "../models/guestUsersModel.js";
+import { Appointment } from "../models/appointmentsModel.js";
 
 export const checkIfGuestIdExists = async (
   req: Request,

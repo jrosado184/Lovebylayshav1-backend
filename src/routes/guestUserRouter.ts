@@ -1,12 +1,12 @@
 import express from "express";
-import { connect } from "../server";
+import { connect } from "../server.js";
 import { ObjectId } from "mongodb";
 import {
   checkIfAppoinmentAlreadyExists,
   checkIfGuestAlreadyExistsAndAddUser,
   checkIfGuestIdExists,
   checkifGuestProvidedBody,
-} from "../middleware/guestUsersMiddlewares";
+} from "../middleware/guestUsersMiddlewares.js";
 
 const router = express.Router();
 
