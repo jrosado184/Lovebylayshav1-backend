@@ -46,7 +46,7 @@ Required: Admin privileges.
 
 ### POST `/api/auth/guestUsers`
 
-**Description:**:
+**Description**:
 Creates a new guest user and appointment if one doesn't already exist. This process involves validating the required information within the request body and checking for the existence of a guest user. If a user already exists but hasn't booked an appointment, the system creates an appointment and adds the `appointment_id` to the guest user's appointments array but does not create another guest user.
 
 **Example**
@@ -78,11 +78,12 @@ Updates a user account. Validates required information is included in the reques
 
 **Optional Body Parameters**:
 
-    `first_name`
-    `last_name`
-    `email`
-    `phone_number`
-    `password`
+    
+  `first_name`
+  `last_name`
+  `email`
+  `phone_number` 
+  `password`
 
 **Example Response**:
 
@@ -164,11 +165,12 @@ Creates a new user account. Validates required information is included in the re
 
 **Required Body Parameters**:
 
-    `first_name`
-    `last_name`
-    `email`
-    `phone_number`
-    `password`
+   
+  `first_name`
+  `last_name`
+  `email`
+  `phone_number` 
+  `password`
 
 **Behavior**:
 
@@ -201,11 +203,12 @@ Updates a user account. Validates required information is included in the reques
 
 **Optional Body Parameters**:
 
-    `first_name`
-    `last_name`
-    `email`
-    `phone_number`
-    `password`
+   
+  `first_name`
+  `last_name`
+  `email`
+  `phone_number` 
+  `password`
 
 **Example Response**:
 
