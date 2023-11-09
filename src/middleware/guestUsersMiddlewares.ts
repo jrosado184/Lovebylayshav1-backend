@@ -77,7 +77,6 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
 
   try {
     const appointment = new Appointment({
-      user_id: req.body.user_id,
       year: req.body.year,
       month: req.body.month,
       day: req.body.day,
