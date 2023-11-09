@@ -37,6 +37,21 @@ export const checkIfNewUserHasBookedAsGuest = async (
   }
 };
 
+export const checkIfUserAlreadyExists = async (req: Request, res: Response, next: NextFunction) => {
+  const db = await connect();
+
+  const { email } = req.body
+
+  const userExists = await db.collection("registered_users").find({
+    email: email
+  }).toArray()
+if(userExists.length > 0) {
+  res.status(409).json({message: "a user with that email already exists"})
+} else {
+  next()
+}
+}
+
 export const checkIfIdExists = async (
   req: Request,
   res: Response,

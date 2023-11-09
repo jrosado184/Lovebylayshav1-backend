@@ -68,6 +68,7 @@ describe("Test user auth endpoints", () => {
   };
 
   test("sanity", () => {});
+
   test("GET, /api/auth/registeredUsers, success", async () => {
     await request(server).post("/api/auth/registeredUsers").send(mockUser);
 
@@ -89,7 +90,7 @@ describe("Test user auth endpoints", () => {
       },
     ]);
     expect(response.body.password).not.toBe(mockUser.password);
-  });
+  },20000);
 
   test("GET, /api/auth/registeredUsers/:id, success", async () => {
     const user = await db.collection("registered_users").insertOne(mockUser);
@@ -107,7 +108,8 @@ describe("Test user auth endpoints", () => {
       last_name: "example",
       phone_number: 123456789,
     });
-  });
+  },20000);
+
   test("GET, /api/auth/registeredUsers/:id, non-existing-id", async () => {
     const userId = "non-existing-id";
 
@@ -118,7 +120,7 @@ describe("Test user auth endpoints", () => {
     expect(response.body.message).toBe(
       `The user with id ${userId} does not exist`
     );
-  });
+  },20000);
 
   test("POST, /api/auth/registeredUsers, success (includes existing guest user)", async () => {
     const guestUserResponse = await request(server)
@@ -154,9 +156,22 @@ describe("Test user auth endpoints", () => {
 
     expect(guest).toBe(null);
 
-    const appointmentId = await db.collection("appointments").find().toArray()
+    const appointmentId = await db.collection("appointments").find().toArray();
 
-    expect(String(appointmentId[0].user_id)).toBe(registeredUserResponse.body._id)
+    expect(String(appointmentId[0].user_id)).toBe(
+      registeredUserResponse.body._id
+    );
+  },20000);
+
+  test("POST, /api/auth/registeredUsers, does not allow duplicate users", async () => {
+    await request(server).post("/api/auth/registeredUsers").send(mockUser);
+    const response = await request(server)
+      .post("/api/auth/registeredUsers")
+      .send(mockUser);
+    expect(response.status).toBe(409);
+    expect(response.body).toStrictEqual({
+      message: "a user with that email already exists",
+    });
   });
 
   test("PUT, /api/auth/regsteredUsers/:id, success", async () => {
@@ -179,7 +194,7 @@ describe("Test user auth endpoints", () => {
       last_name: "example1",
       email: "email1",
     });
-  });
+  },20000);
 
   test("PUT, /api/auth/registeredUsers/:id, fails if not body request", async () => {
     const user = await db.collection("registered_users").insertOne(mockUser);
@@ -192,7 +207,7 @@ describe("Test user auth endpoints", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Please enter a field to update");
-  });
+  },20000);
 
   test("PUT, /api/auth/regsteredUsers/:id, non-existing-id", async () => {
     const userId = "non-existing-id";
@@ -202,7 +217,7 @@ describe("Test user auth endpoints", () => {
       .send(undefined);
 
     expect(response.status).toBe(404);
-  });
+  },20000);
 
   test("DELETE, /api/auth/registeredUsers/:id, success", async () => {
     const addedUser = await request(server)
@@ -222,22 +237,26 @@ describe("Test user auth endpoints", () => {
     });
 
     const deletedUser = await db.collection("registered_users").findOne({
-      _id: addedUser.body._id
-    })
+      _id: addedUser.body._id,
+    });
 
     expect(usersSession).toBeFalsy();
-    expect(deletedUser).toBeNull()
+    expect(deletedUser).toBeNull();
+  },20000);
 
-  }, 20000);
   test("DELETE, /api/auth/registeredUsers/:id, fails if an appointment still exists", async () => {
-    await request(server).post("/api/auth/guestUsers").send(guestMockUser)
-    const registeredUer = await request(server).post("/api/auth/registeredUsers").send(mockUser)
+    await request(server).post("/api/auth/guestUsers").send(guestMockUser);
+    const registeredUer = await request(server)
+      .post("/api/auth/registeredUsers")
+      .send(mockUser);
 
-    const response = await request(server).delete(`/api/auth/registeredUsers/${registeredUer.body._id}`)
+    const response = await request(server).delete(
+      `/api/auth/registeredUsers/${registeredUer.body._id}`
+    );
 
-    expect(response.status).toBe(409)
+    expect(response.status).toBe(409);
     expect(response.body).toStrictEqual({
-      message: "Cannot delete account with upcoming appointment"
-    })
-  })
+      message: "Cannot delete account with upcoming appointment",
+    });
+  },20000);
 });

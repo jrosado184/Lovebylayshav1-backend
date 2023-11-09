@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import {
   checkIfIdExists,
   checkIfNewUserHasBookedAsGuest,
+  checkIfUserAlreadyExists,
   checkIfUserHasUpcomingAppointments,
   checkIfUserProvidedBody,
   checkUpdateBody,
@@ -52,6 +53,7 @@ router.get(
 router.post(
   "/api/auth/registeredUsers",
   checkIfUserProvidedBody,
+  checkIfUserAlreadyExists,
   async (req, res) => {
     const db = await connect();
 
