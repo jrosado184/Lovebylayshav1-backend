@@ -172,3 +172,29 @@ export const checkIfAppoinmentAlreadyExists = async (
     next(error);
   }
 };
+
+export const checkIfEmailToUpdateExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const db = await connect();
+  if (req.body.email) {
+    const emailExists = await db
+      .collection("guest_users")
+      .find({
+        email: req.body.email,
+      })
+      .toArray();
+    if (emailExists.length > 0) {
+      res.status(400).json({
+        message:
+          "Cannot use existing email",
+      });
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
+};

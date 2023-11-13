@@ -3,6 +3,7 @@ import { connect } from "../server.js";
 import { ObjectId } from "mongodb";
 import {
   checkIfAppoinmentAlreadyExists,
+  checkIfEmailToUpdateExists,
   checkIfGuestAlreadyExistsAndAddUser,
   checkIfGuestIdExists,
   checkifGuestProvidedBody,
@@ -76,32 +77,53 @@ router.post(
   }
 );
 
-router.put("/api/auth/guestUsers/:id", checkIfGuestIdExists, async (req, res) => {
-  const db = await connect();
-  const guestUserId = req.params.id;
-  const guestUserInfo = req.body;
+router.put(
+  "/api/auth/guestUsers/:id",
+  checkIfGuestIdExists,
+  checkIfAppoinmentAlreadyExists,
+  checkIfEmailToUpdateExists,
+  async (req, res) => {
+    const db = await connect();
+    const guestUserId = req.params.id;
+    const guestUserInfo = req.body;
 
-  try {
-
-    const updateGuestUser = await db.collection("guest_users").updateOne(
-      {
-        _id: new ObjectId(guestUserId),
-      },
-      {
-        $set: guestUserInfo,
-      }
-    );
+    try {
+      const updateGuestUser = await db.collection("guest_users").updateOne(
+        {
+          _id: new ObjectId(guestUserId),
+        },
+        {
+          $set: guestUserInfo,
+        }
+      );
       const updatedGuestUser = await db.collection("guest_users").findOne({
-        _id: new ObjectId(guestUserId)
-      })
-    
-    if(updateGuestUser.matchedCount === 1) {
-      res.json(updatedGuestUser)
+        _id: new ObjectId(guestUserId),
+      });
 
+      if (updateGuestUser.matchedCount === 1) {
+        res.json(updatedGuestUser);
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: `There was an error updating the current user with id, ${guestUserId}`,
+        error: error,
+      });
+    }
+  }
+);
+
+router.delete("/api/auth/guestUsers/:id", async (req, res) => {
+  const db = await connect();
+  try {
+    const deleteGuestUser = await db.collection("guest_users").deleteOne({
+      _id: new ObjectId(req.params.id),
+    });
+    if (deleteGuestUser.deletedCount === 1) {
+      res.json("Guest user successfully deleted");
     }
   } catch (error) {
     res.status(500).json({
-      message: `There was an error updating the current user with id, ${guestUserId}`,
+      message: "Internal Server Error",
       error: error,
     });
   }
