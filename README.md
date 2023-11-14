@@ -49,6 +49,15 @@ Required: User's ID must match the authenticated guest user or have admin privil
 **Description**:
 Creates a new guest user and appointment if one doesn't already exist. This process involves validating the required information within the request body and checking for the existence of a guest user. If a user already exists but hasn't booked an appointment, the system creates an appointment and adds the `appointment_id` to the guest user's appointments array but does not create another guest user.
 
+if a guest user does not exist and the appointment has not been booked, it created a guest user and appointment, while also referencing with the appropiate id's
+
+**Required Body Parameters**:
+
+`first_name`
+`last_name`
+`email`
+`phone_number`
+
 **Example**
 
 ```json
@@ -81,15 +90,6 @@ Creates a new guest user and appointment if one doesn't already exist. This proc
   }
 }
 ```
-
-if a guest user does not exist and the appointment has not been booked, it created a guest user and appointment, while also referencing with the appropiate id's
-
-**Required Body Parameters**:
-
-`first_name`
-`last_name`
-`email`
-`phone_number`
 
 ### PUT `/api/auth/guestUsers/:id`
 
