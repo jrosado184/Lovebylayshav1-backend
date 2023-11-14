@@ -98,7 +98,7 @@ if a guest user does not exist and the appointment has not been booked, it creat
 ### PUT `/api/auth/guestUsers/:id`
 
 **Description:**:
-Updates a user account. Validates required information is included in the request body and checks if id passed in params exists.
+Updates a guest user account. Validates required information is included in the request body and checks if id passed in params exists.
 
 **Optional Body Parameters**:
 
@@ -121,3 +121,4 @@ Updates a user account. Validates required information is included in the reques
   "phone_number": 123456789
 }
 ```
+

@@ -72,7 +72,6 @@ router.post(
       res.status(201).json(guestUserWithAppointmentInformation);
     } catch (err) {
       res.status(500).json(err);
-      console.log(err);
     }
   }
 );

@@ -1,4 +1,3 @@
-
 ## User Endpoints
 
 ### GET `/api/auth/registeredUsers`
@@ -148,3 +147,4 @@ removes user if no upcoming appointments exist on the account and also removes a
   "user was successfully deleted"
 }
 ```
+

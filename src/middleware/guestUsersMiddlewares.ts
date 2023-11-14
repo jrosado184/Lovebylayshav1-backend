@@ -161,7 +161,7 @@ export const checkIfAppoinmentAlreadyExists = async (
       })
       .toArray();
 
-    if (appointmentAlreadyExists.length) {
+    if (appointmentAlreadyExists.length > 0) {
       res.status(400).json({
         message: "This appointment has already been booked",
       });
@@ -188,13 +188,12 @@ export const checkIfEmailToUpdateExists = async (
       .toArray();
     if (emailExists.length > 0) {
       res.status(400).json({
-        message:
-          "Cannot use existing email",
+        message: "Cannot use existing email",
       });
     } else {
-      next()
+      next();
     }
   } else {
-    next()
+    next();
   }
 };
