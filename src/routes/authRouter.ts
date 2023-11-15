@@ -27,7 +27,7 @@ router.get("/dashboard", async (req: any, res) => {
 });
 
 router.get("/logout", (req, res, next) => {
-  if (req.session) {
+  if ("passport" in req.session) {
     req.logout((err) => {
       if (err) {
         res.status(500).json({ message: "Logout failed", error: err });
@@ -47,7 +47,6 @@ router.get("/logout", (req, res, next) => {
   } else {
     res.status(400).json({ message: "No active session to logout" });
   }
-  res.redirect("/login");
 });
 
 export default router;

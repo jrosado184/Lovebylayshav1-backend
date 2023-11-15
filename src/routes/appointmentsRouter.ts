@@ -7,6 +7,7 @@ import {
   checkUpdateBody,
 } from "../middleware/appointmentsMiddlewares.js";
 import { checkIfAppoinmentAlreadyExists } from "../middleware/guestUsersMiddlewares.js";
+
 const router = Router();
 
 router.get("/api/auth/appointments", async (req, res) => {
@@ -72,9 +73,9 @@ router.post(
 
       res.status(201).json(getAddedAppointment);
     } catch (err) {
-      // res.status(500).json({
-      //   message: "There was an error adding an appointments",
-      // });
+      res.status(500).json({
+        message: "There was an error adding an appointments",
+      });
     }
   }
 );
@@ -126,10 +127,10 @@ router.delete("/api/auth/appointments/:id", checkIfIdExists, async (req, res) =>
       });
     }
   } catch (error) {
-    // res.status(500).json({
-    //   message: "Internal Error, There was an error deleting appointment",
-    //   error: error,
-    // });
+    res.status(500).json({
+      message: "Internal Error, There was an error deleting appointment",
+      error: error,
+    });
   }
 });
 

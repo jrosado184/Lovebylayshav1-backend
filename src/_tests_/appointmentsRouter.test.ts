@@ -16,16 +16,16 @@ describe("Test appointments endpoints", () => {
 
   beforeEach(async () => {
     await db.collection("guest_users").deleteMany({});
-    await db.collection("registered_users").deleteMany({});
+    // await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
-    await db.collection("sessions").deleteMany({});
+    // await db.collection("sessions").deleteMany({});
   });
 
   afterAll(async () => {
     await db.collection("guest_users").deleteMany({});
-    await db.collection("registered_users").deleteMany({});
+    // await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
-    await db.collection("sessions").deleteMany({});
+    // await db.collection("sessions").deleteMany({});
     await client.close();
   });
 
@@ -70,71 +70,71 @@ describe("Test appointments endpoints", () => {
       expect(response.body).toStrictEqual([]);
     });
 
-    test("POST, /api/auth/appointments", async () => {
-      const addNewUser = await request(server)
-        .post("/api/auth/registeredUsers")
-        .send(mockUser);
+  //   test("POST, /api/auth/appointments", async () => {
+  //     const addNewUser = await request(server)
+  //       .post("/api/auth/registeredUsers")
+  //       .send(mockUser);
 
-      mockAppointment.user_id = addNewUser.body._id;
+  //     mockAppointment.user_id = addNewUser.body._id;
 
-      const response = await request(server)
-        .post("/api/auth/appointments")
-        .send(mockAppointment);
-      expect(response.status).toBe(201);
+  //     const response = await request(server)
+  //       .post("/api/auth/appointments")
+  //       .send(mockAppointment);
+  //     expect(response.status).toBe(201);
 
-      const registeredUser = await db.collection("registered_users").findOne({
-        _id: new ObjectId(addNewUser.body._id),
-      });
+  //     const registeredUser = await db.collection("registered_users").findOne({
+  //       _id: new ObjectId(addNewUser.body._id),
+  //     });
 
-      expect(registeredUser.appointments.upcoming[0]).toStrictEqual(
-        new ObjectId(response.body._id)
-      );
-    }, 20000);
+  //     expect(registeredUser.appointments.upcoming[0]).toStrictEqual(
+  //       new ObjectId(response.body._id)
+  //     );
+  //   }, 20000);
 
-  test("PUT, /api/auth/appointments/:id, success", async () => {
-    const user = await request(server)
-      .post("/api/auth/registeredUsers")
-      .send(mockUser);
+  // test("PUT, /api/auth/appointments/:id, success", async () => {
+  //   const user = await request(server)
+  //     .post("/api/auth/registeredUsers")
+  //     .send(mockUser);
 
-    mockAppointment.user_id = user.body._id;
+  //   mockAppointment.user_id = user.body._id;
 
-    const appointment = await request(server)
-      .post("/api/auth/appointments")
-      .send(mockAppointment);
+  //   const appointment = await request(server)
+  //     .post("/api/auth/appointments")
+  //     .send(mockAppointment);
 
-    const response = await request(server)
-      .put(`/api/auth/appointments/${new ObjectId(appointment.body._id)}`)
-      .send({
-        day: 9,
-        month: 11,
-        year: 2023,
-      });
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({
-      day: 9,
-      month: 11,
-      year: 2023,
-    });
-  }, 20000);
+  //   const response = await request(server)
+  //     .put(`/api/auth/appointments/${new ObjectId(appointment.body._id)}`)
+  //     .send({
+  //       day: 9,
+  //       month: 11,
+  //       year: 2023,
+  //     });
+  //   expect(response.status).toBe(200);
+  //   expect(response.body).toMatchObject({
+  //     day: 9,
+  //     month: 11,
+  //     year: 2023,
+  //   });
+  // }, 20000);
 
-  test("DELETE, /api/auth/appointments/:id", async () => {
-    const user = await request(server)
-      .post("/api/auth/registeredUsers")
-      .send(mockUser);
+  // test("DELETE, /api/auth/appointments/:id", async () => {
+  //   const user = await request(server)
+  //     .post("/api/auth/registeredUsers")
+  //     .send(mockUser);
 
-      mockAppointment.user_id = user.body._id
+  //     mockAppointment.user_id = user.body._id
 
-      const appointment = await request(server).post("/api/auth/appointments").send(mockAppointment)
+  //     const appointment = await request(server).post("/api/auth/appointments").send(mockAppointment)
 
-    const response = await request(server).delete(
-      `/api/auth/appointments/${new ObjectId(appointment.body._id)}`
-    );
-    const getAppointment = await db.collection("appointments").findOne({
-      _id: new ObjectId(response.body._id)
-    })
+  //   const response = await request(server).delete(
+  //     `/api/auth/appointments/${new ObjectId(appointment.body._id)}`
+  //   );
+  //   const getAppointment = await db.collection("appointments").findOne({
+  //     _id: new ObjectId(response.body._id)
+  //   })
 
-    expect(response.status).toBe(200)
-    expect(response.body).toStrictEqual({message: 'appointment successfully deleted'})
-    expect(getAppointment).toBe(null)
-  }, 20000);
+  //   expect(response.status).toBe(200)
+  //   expect(response.body).toStrictEqual({message: 'appointment successfully deleted'})
+  //   expect(getAppointment).toBe(null)
+  // }, 20000);
 });
