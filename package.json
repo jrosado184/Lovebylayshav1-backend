@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "tsc && export NODE_ENV=testing && jest _tests_ --detectOpenHandles --watch",
+    "test": "tsc && export NODE_ENV=testing && jest _tests_ --detectOpenHandles --maxWorkers=4 --watch",
     "dev": "nodemon --watch src -e ts --exec \"tsc && node --es-module-specifier-resolution=node dist/index.js\"",
     "start": "node --es-module-specifier-resolution=node dist/index.js",
     "build": "tsc",

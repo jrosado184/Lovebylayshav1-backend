@@ -1,3 +1,48 @@
+## Authentication Endpoints
+
+### POST `/login`
+
+**Description:**  
+Allows a user that has a registered account to log in.
+
+**Required Body Parameters**
+
+`email`
+`password`
+
+**Example Response:**
+
+```json
+{
+  "_id": "user_id",
+  "appointment_id": ["appointment_id"],
+  "first_name": "test",
+  "last_name": "test",
+  "email": "test@example.com",
+  "phone_number": 123456789,
+  "appointments": {
+    "upcoming": [],
+    "past": []
+  },
+  "createdAt": "2023-11-15T21:22:17.059Z",
+  "updatedAt": "2023-11-15T21:22:17.059Z",
+  "administrative_rights": false
+}
+```
+
+### GET `/logout`
+
+**Description:**  
+Logs a user out from their account and destroys their session.
+
+**Example Response:**
+
+```json
+{
+  "message": "Logout and session destruction successful"
+}
+```
+
 ## Guest User Endpoints
 
 ### GET `/api/auth/guestUsers`
@@ -325,42 +370,37 @@ Creates a new appointment if one doesn't already exist. This process involves va
 
 **Required Body Parameters**:
 
-`year`
-`month`
-`day`
-`time`
-`fullSet`
-`shape`
-`length`
-`design`
-`extras`
-`pedicure`
-`addons`
-`user_id`
+- `year` (number): The year of the appointment.
+- `month` (number): The month of the appointment.
+- `day` (number): The day of the appointment.
+- `time` (string): The time of the appointment.
+- `fullSet` (boolean): Indicates if a full nail set is requested.
+- `shape` (string): The shape of the nails.
+- `length` (string): The length of the nails.
+- `design` (string): The design of the nails.
+- `extras` (array of strings): Extra services, if any.
+- `pedicure` (boolean): Indicates if a pedicure is requested.
+- `addons` (string): Additional notes or addons.
+- `user_id` (string): The ID of the user associated with the appointment.
 
-**Example**
+**Example Request**:
 
 ```json
 {
-  "_id": "655120c29020c753942fc57e",
   "year": 2023,
   "month": 11,
   "day": 8,
   "time": "10:00 AM",
-  "services": {
-    "nails": {
-      "fullSet": true,
-      "shape": "coffin",
-      "length": "Shorties",
-      "design": "any",
-      "extras": ["any"]
-    },
-    "pedicure": "false"
-  },
+  "fullSet": true,
+  "shape": "coffin",
+  "length": "Shorties",
+  "design": "any",
+  "extras": ["any"],
+  "pedicure": false,
+  "addons": "none",
   "user_id": "655120c29020c753942fc57f"
 }
 ```
-
 ### PUT `/api/auth/appointments/:id`
 
 **Description:**:

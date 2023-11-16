@@ -9,22 +9,14 @@ const router = Router();
 router.post(
   "/login",
   passport.authenticate("local"),
-  async (req, res, next) => {
-    res.status(200).redirect("/dashboard")
-  }
-);
-
-router.get("/dashboard", async (req: any, res) => {
-  if (req.isAuthenticated()) {
+  async (req: any, res, next) => {
     const db = await connect();
     const userInformation = await db
       .collection("registered_users")
-      .findOne({ _id: new ObjectId(req.user._id) });
+      .findOne({ _id: new ObjectId(req?.user?._id) });
     res.json(userInformation);
-  } else {
-    res.status(401).json({ message: "Unathorized, Please log in" });
   }
-});
+);
 
 router.get("/logout", (req, res, next) => {
   if ("passport" in req.session) {

@@ -23,9 +23,9 @@ describe("Test authentication endpoints", () => {
 
   afterAll(async () => {
     await db.collection("guest_users").deleteMany({});
-    // await db.collection("registered_users").deleteMany({});
+    await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
-    // await db.collection("sessions").deleteMany({});
+    await db.collection("sessions").deleteMany({});
     await client.close();
   });
 
@@ -63,34 +63,28 @@ describe("Test authentication endpoints", () => {
     },
     user_id: new ObjectId(),
   };
-test.todo("sanity")
-//   test("/login", async () => {
-//     const user = await request(server)
-//       .post("/api/auth/registeredUsers")
-//       .send(mockUser);
-//     await db.collection("sessions").deleteMany({});
-//     const registerUser = await request(server).post("/login").send({
-//       email: "email",
-//       password: "password",
-//     });
+  // test.todo("sanity");
 
-//     const session = await db.collection("sessions").findOne({
-//       "session.passport.user": user.body._id,
-//     });
+    test("/login", async () => {
+      const user = await request(server)
+        .post("/api/auth/registeredUsers")
+        .send(mockUser);
+      await db.collection("sessions").deleteMany({});
+      const registerUser = await request(server).post("/login").send({
+        email: "email",
+        password: "password",
+      });
 
-//     expect(session.session.passport.user).toBe(user.body._id);
-//     expect(registerUser.status).toBe(302);
-//     expect(registerUser.text).toStrictEqual("Found. Redirecting to /dashboard");
-//   });
+      const session = await db.collection("sessions").findOne({
+        "session.passport.user": user.body._id,
+      });
 
-  test("/logout", async () => {
-    const user = await request(server)
-          .post("/api/auth/registeredUsers")
-          .send(mockUser);
-
-    await request(server).post("/login")
-    
-    const response = await request(server).get("/logout")
-    console.log(response.body)
-  })
+      expect(session.session.passport.user).toBe(user.body._id);
+      expect(registerUser.status).toBe(200);
+      expect(registerUser.body).toMatchObject({
+  first_name: 'test',
+  last_name: 'example',
+  email: 'email',
+  });
+    });
 });
