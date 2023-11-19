@@ -16,7 +16,7 @@ dotenv.config();
 
 const server: Application = express();
 
-export const dbUri = configENV.dbUri ?? "";
+export const dbUri = configENV.dbUri;
 
 const store = new (MongoDBStore(session))({
   uri: dbUri,

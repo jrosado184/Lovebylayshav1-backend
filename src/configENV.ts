@@ -19,7 +19,7 @@ const developmentConfig = {
   
   const environment = process.env.NODE_ENV || 'development';
   
-  let configENV: { dbUri: string | undefined; appPort: number; };
+  let configENV: { dbUri: string; appPort: number; };
   
   switch (environment) {
     case 'development':
