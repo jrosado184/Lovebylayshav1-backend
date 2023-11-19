@@ -449,4 +449,3 @@ if updating an appointment:
   }
 }
 ```
-``
