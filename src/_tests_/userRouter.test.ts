@@ -19,7 +19,7 @@ describe("Test user auth endpoints", () => {
     await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
     await db.collection("sessions").deleteMany({});
-  });
+  }, 20000);
 
   afterAll(async () => {
     await db.collection("guest_users").deleteMany({});

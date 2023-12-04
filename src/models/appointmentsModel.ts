@@ -17,7 +17,7 @@ export interface AppointmentTypes {
         design: String;
         extras: String[];
       };
-      pedicure: Boolean;
+      pedicure: String;
       addons: String;
     };
 }
