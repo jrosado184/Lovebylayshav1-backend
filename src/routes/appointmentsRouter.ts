@@ -40,8 +40,7 @@ router.post(
       time: req.body.time,
       services: {
         nails: {
-          fullSet: req.body.services.nails.fullSet,
-          refill: req.body.services.nails.refill,
+          service: req.body.services.nails.service,
           shape: req.body.services.nails.shape,
           length: req.body.services.nails.length,
           design: req.body.services.nails.design,
