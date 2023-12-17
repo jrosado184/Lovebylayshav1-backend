@@ -10,8 +10,7 @@ export interface AppointmentTypes {
     time: String;
     services: {
       nails: {
-        fullSet: Boolean;
-        refill: Boolean;
+        service: String;
         shape: String;
         length: String;
         design: String;
@@ -51,11 +50,8 @@ const appointmentSchema = new Schema<AppointmentTypes>({
     },
     services: {
       nails: {
-        fullSet: {
-          type: Boolean,
-        },
-        refill: {
-          type: Boolean,
+        service: {
+          type: String,
         },
         shape: {
           type: String,

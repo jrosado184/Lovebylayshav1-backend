@@ -123,7 +123,7 @@ if a guest user does not exist and the appointment has not been booked, it creat
     "time": "10:00 AM",
     "services": {
       "nails": {
-        "fullSet": true,
+        "service": "Full Set" ,
         "shape": "coffin",
         "length": "Shorties",
         "design": "any",
@@ -332,7 +332,7 @@ Required: Admin privileges.
     "time": "10:00 AM",
     "services": {
       "nails": {
-        "fullSet": true,
+        "service": "Refill",
         "shape": "coffin",
         "length": "Shorties",
         "design": "any",
@@ -350,7 +350,7 @@ Required: Admin privileges.
     "time": "10:00 AM",
     "services": {
       "nails": {
-        "fullSet": true,
+        "service": "Full Set",
         "shape": "coffin",
         "length": "Shorties",
         "design": "any",
@@ -391,7 +391,7 @@ Creates a new appointment if one doesn't already exist. This process involves va
   "month": 11,
   "day": 8,
   "time": "10:00 AM",
-  "fullSet": true,
+  "service":"Refill",
   "shape": "coffin",
   "length": "Shorties",
   "design": "any",
@@ -438,7 +438,7 @@ if updating an appointment:
   "time": "10:00 AM",
   "services": {
     "nails": {
-      "fullSet": true,
+      "service":"Refill",
       "shape": "coffin",
       "length": "Shorties",
       "design": "any",
