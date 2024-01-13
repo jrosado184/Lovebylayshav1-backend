@@ -12,6 +12,8 @@ import session from "express-session";
 import MongoDBStore from "connect-mongodb-session";
 import "./passport-config.js";
 import passport from "passport";
+import fileUpload from "express-fileupload";
+import { v2 as cloudinary } from "cloudinary";
 dotenv.config();
 
 const server: Application = express();
@@ -23,7 +25,14 @@ const store = new (MongoDBStore(session))({
   collection: "sessions",
 });
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 server.use(express.json());
+server.use(fileUpload());
 server.use(cors());
 server.use(morgan("dev"));
   server.use(

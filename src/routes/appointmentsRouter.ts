@@ -38,17 +38,13 @@ router.post(
       month: req.body.month,
       day: req.body.day,
       time: req.body.time,
-      services: {
-        nails: {
-          service: req.body.services.nails.service,
-          shape: req.body.services.nails.shape,
-          length: req.body.services.nails.length,
-          design: req.body.services.nails.design,
-          extras: req.body.services.nails.extras,
-        },
-        pedicure: req.body.services.pedicure,
-        addons: req.body.services.addons,
-      },
+      service: req.body.services.nails.service,
+      shape: req.body.services.nails.shape,
+      length: req.body.services.nails.length,
+      design: req.body.services.nails.design,
+      extras: req.body.services.nails.extras,
+      pedicure: req.body.services.pedicure,
+      inspirations: req.body.services.inspirations,
       user_id: req.body.user_id,
     });
 
@@ -106,31 +102,35 @@ router.put(
     } catch (error) {
       res.status(500).json({
         message: "There was an error updating appointment",
-        error: error
-      })
+        error: error,
+      });
     }
   }
 );
 
-router.delete("/api/auth/appointments/:id", checkIfIdExists, async (req, res) => {
-  const db = await connect();
+router.delete(
+  "/api/auth/appointments/:id",
+  checkIfIdExists,
+  async (req, res) => {
+    const db = await connect();
 
-  try {
-    const deleteUser = await db.collection("appointments").deleteOne({
-      _id: new ObjectId(req.params.id),
-    });
+    try {
+      const deleteUser = await db.collection("appointments").deleteOne({
+        _id: new ObjectId(req.params.id),
+      });
 
-    if (deleteUser.deletedCount === 1) {
-      res.status(200).json({
-        message: "appointment successfully deleted",
+      if (deleteUser.deletedCount === 1) {
+        res.status(200).json({
+          message: "appointment successfully deleted",
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal Error, There was an error deleting appointment",
+        error: error,
       });
     }
-  } catch (error) {
-    res.status(500).json({
-      message: "Internal Error, There was an error deleting appointment",
-      error: error,
-    });
   }
-});
+);
 
 export default router;

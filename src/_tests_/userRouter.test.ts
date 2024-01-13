@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { MongoClient, ObjectId } from "mongodb";
 import server, { dbUri } from "../server";
 import request from "supertest";
+import { removeCloudinaryImage } from "./guestUserRouter.test";
 
 dotenv.config();
 
@@ -38,18 +39,13 @@ describe("Test user auth endpoints", () => {
     month: 9,
     day: 29,
     time: "9:00 PM",
-    services: {
-      nails: {
-        fullSet: true,
-        refill: false,
-        shape: "coffin",
-        length: "Shorties",
-        designs: "Full Frenchies",
-        extras: ["Soak Off"],
-      },
-      pedicure: null,
-      addons: null,
-    },
+    service: "Full Set",
+    shape: "coffin",
+    length: "Shorties",
+    designs: "Full Frenchies",
+    extras: ["Soak Off"],
+    pedicure: null,
+    inspirations: ["https://picsum.photos/200/300"],
   };
 
   const mockUser = {
@@ -90,7 +86,7 @@ describe("Test user auth endpoints", () => {
       },
     ]);
     expect(response.body.password).not.toBe(mockUser.password);
-  },20000);
+  }, 20000);
 
   test("GET, /api/auth/registeredUsers/:id, success", async () => {
     const user = await db.collection("registered_users").insertOne(mockUser);
@@ -108,7 +104,7 @@ describe("Test user auth endpoints", () => {
       last_name: "example",
       phone_number: 123456789,
     });
-  },20000);
+  }, 20000);
 
   test("GET, /api/auth/registeredUsers/:id, non-existing-id", async () => {
     const userId = "non-existing-id";
@@ -120,22 +116,22 @@ describe("Test user auth endpoints", () => {
     expect(response.body.message).toBe(
       `The user with id ${userId} does not exist`
     );
-  },20000);
+  }, 20000);
 
   test("POST, /api/auth/registeredUsers, success (includes existing guest user)", async () => {
-    const guestUserResponse = await request(server)
+   const guestUserRequest= await request(server)
       .post("/api/auth/guestUsers")
       .send(guestMockUser);
 
-    expect(guestUserResponse.status).toBe(201);
+      const guestUser = await db.collection("guest_users").find().toArray();
 
-    expect(guestUserResponse.body.guestUser).toMatchObject({
+    expect(guestUserRequest.status).toBe(201);
+
+    expect(guestUserRequest.body).toMatchObject({
       first_name: "testFirst",
       last_name: "testLast",
       email: "email",
       phone_number: 123456789,
-    });
-    expect(guestUserResponse.body.guestUserAppointment).toMatchObject({
       year: 2023,
       month: 9,
       day: 29,
@@ -146,13 +142,14 @@ describe("Test user auth endpoints", () => {
       .post("/api/auth/registeredUsers")
       .send(mockUser);
 
+
     expect(registeredUserResponse.status).toBe(201);
 
     expect(registeredUserResponse.body.appointments.upcoming).toHaveLength(1);
 
     const guest = await db
       .collection("guest_users")
-      .findOne({ _id: new ObjectId(guestUserResponse.body.guestUser._id) });
+      .findOne({ _id: new ObjectId(guestUser[0]._id) });
 
     expect(guest).toBe(null);
 
@@ -161,7 +158,8 @@ describe("Test user auth endpoints", () => {
     expect(String(appointmentId[0].user_id)).toBe(
       registeredUserResponse.body._id
     );
-  },20000);
+   await removeCloudinaryImage(registeredUserResponse.body.inspirations?.[0]?.public_id);
+  }, 20000);
 
   test("POST, /api/auth/registeredUsers, does not allow duplicate users", async () => {
     await request(server).post("/api/auth/registeredUsers").send(mockUser);
@@ -194,7 +192,7 @@ describe("Test user auth endpoints", () => {
       last_name: "example1",
       email: "email1",
     });
-  },20000);
+  }, 20000);
 
   test("PUT, /api/auth/registeredUsers/:id, fails if not body request", async () => {
     const user = await db.collection("registered_users").insertOne(mockUser);
@@ -207,7 +205,7 @@ describe("Test user auth endpoints", () => {
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Please enter a field to update");
-  },20000);
+  }, 20000);
 
   test("PUT, /api/auth/regsteredUsers/:id, non-existing-id", async () => {
     const userId = "non-existing-id";
@@ -217,7 +215,7 @@ describe("Test user auth endpoints", () => {
       .send(undefined);
 
     expect(response.status).toBe(404);
-  },20000);
+  }, 20000);
 
   test("DELETE, /api/auth/registeredUsers/:id, success", async () => {
     const addedUser = await request(server)
@@ -242,7 +240,7 @@ describe("Test user auth endpoints", () => {
 
     expect(usersSession).toBeFalsy();
     expect(deletedUser).toBeNull();
-  },20000);
+  }, 20000);
 
   test("DELETE, /api/auth/registeredUsers/:id, fails if an appointment still exists", async () => {
     await request(server).post("/api/auth/guestUsers").send(guestMockUser);
@@ -258,5 +256,5 @@ describe("Test user auth endpoints", () => {
     expect(response.body).toStrictEqual({
       message: "Cannot delete account with upcoming appointment",
     });
-  },20000);
+  }, 20000);
 });

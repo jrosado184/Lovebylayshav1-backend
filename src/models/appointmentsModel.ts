@@ -3,22 +3,18 @@ import mongoose, { Schema } from "mongoose";
 
 export interface AppointmentTypes {
   appointment_id: String;
-  user_id: Object,
-    year: Number;
-    month: Number;
-    day: Number;
-    time: String;
-    services: {
-      nails: {
-        service: String;
-        shape: String;
-        length: String;
-        design: String;
-        extras: String[];
-      };
-      pedicure: String;
-      addons: String;
-    };
+  user_id: Object;
+  year: Number;
+  month: Number;
+  day: Number;
+  time: String;
+  service: String;
+  shape: String;
+  length: String;
+  design: String;
+  extras: Array<String>;
+  pedicure: String;
+  inspirations: Array<String>;
 }
 
 const appointmentSchema = new Schema<AppointmentTypes>({
@@ -32,47 +28,42 @@ const appointmentSchema = new Schema<AppointmentTypes>({
     type: ObjectId,
     unique: true,
   },
-    year: {
-      required: true,
-      type: Number,
-    },
-    month: {
-      required: true,
-      type: Number,
-    },
-    day: {
-      required: true,
-      type: Number,
-    },
-    time: {
-      required: true,
-      type: String,
-    },
-    services: {
-      nails: {
-        service: {
-          type: String,
-        },
-        shape: {
-          type: String,
-        },
-        length: {
-          type: String,
-        },
-        design: {
-          type: String,
-        },
-        extras: {
-          type: Array<String>,
-        },
-      },
-      pedicure: {
-        type: String,
-      },
-      addons: {
-        type: String,
-      },
+  year: {
+    required: true,
+    type: Number,
   },
+  month: {
+    required: true,
+    type: Number,
+  },
+  day: {
+    required: true,
+    type: Number,
+  },
+  time: {
+    required: true,
+    type: String,
+  },
+  service: {
+    type: String,
+  },
+  shape: {
+    type: String,
+  },
+  length: {
+    type: String,
+  },
+  design: {
+    type: String,
+  },
+  extras: {},
+  pedicure: {
+    type: String,
+  },
+  inspirations: {},
 });
 
-export const Appointment = mongoose.model<AppointmentTypes>("appointment", appointmentSchema)
+export const Appointment = mongoose.model<AppointmentTypes>(
+  "appointment",
+  appointmentSchema
+);

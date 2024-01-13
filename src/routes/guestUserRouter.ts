@@ -1,6 +1,7 @@
 import express from "express";
 import { connect } from "../server.js";
-import { ObjectId } from "mongodb";
+import { Db, ObjectId } from "mongodb";
+import { v2 as cloudinary } from "cloudinary";
 import {
   checkIfAppoinmentAlreadyExists,
   checkIfEmailToUpdateExists,
@@ -56,25 +57,64 @@ router.post(
     const guestUserId = res.locals.guestUserId;
 
     try {
-      const guestUser = await db
-        .collection("guest_users")
-        .findOne({ _id: new ObjectId(guestUserId) });
+      const guestUser = await getGuestUser(db, guestUserId);
 
-      const guestUserAppointment = await db
-        .collection("appointments")
-        .findOne({ user_id: new ObjectId(guestUserId) });
+      await uploadImagesToCloud(db, guestUserId, req);
+
+      const updatedGuestUser = await getGuestAppointment(db, guestUserId);
 
       const guestUserWithAppointmentInformation = {
-        guestUser,
-        guestUserAppointment,
+        ...guestUser,
+        ...updatedGuestUser,
       };
 
       res.status(201).json(guestUserWithAppointmentInformation);
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   }
 );
+
+const getGuestUser = (db: Db, guestUserId: string) => {
+  return db
+    .collection("guest_users")
+    .findOne(
+      { _id: new ObjectId(guestUserId) },
+      { projection: { appointment_id: 0, user_id: 0 } }
+    );
+};
+
+const getGuestAppointment = (db: Db, guestUserId: string) => {
+  return db
+    .collection("appointments")
+    .findOne(
+      { user_id: new ObjectId(guestUserId) },
+      { projection: { user_id: 0 } }
+    );
+};
+
+const updateAppointment = async (db: Db, guestUserId: string, req: any) => {
+  await db
+    .collection("appointments")
+    .updateOne(
+      { user_id: new ObjectId(guestUserId) },
+      { $set: { inspirations: req?.body?.inspirations } }
+    );
+  return getGuestAppointment(db, guestUserId);
+};
+
+const uploadImagesToCloud = async (db: Db, guestUserId: string, req: any) => {
+  const { inspirations } = req.body;
+
+  if (inspirations && inspirations.length > 0) {
+    for (let i = 0; i < inspirations.length; i++) {
+      const image = await cloudinary.uploader.upload(inspirations[i]);
+      inspirations[i] = { url: image.url, public_id: image.public_id };
+    }
+    await updateAppointment(db, guestUserId, req);
+  }
+};
 
 router.put(
   "/api/auth/guestUsers/:id",

@@ -1,8 +1,10 @@
 import { ObjectId } from "mongodb";
+import { v2 as cloudinary } from "cloudinary";
 import { connect } from "../server.js";
 import { NextFunction, Request, Response } from "express";
 import { GuestUser } from "../models/guestUsersModel.js";
 import { Appointment } from "../models/appointmentsModel.js";
+import { configDotenv } from "dotenv";
 
 export const checkIfGuestIdExists = async (
   req: Request,
@@ -29,11 +31,25 @@ export const checkifGuestProvidedBody = (
   res: Response,
   next: NextFunction
 ) => {
-  const { first_name, last_name, email, phone_number } = req.body;
+  const {
+    first_name,
+    last_name,
+    email,
+    phone_number,
+    service,
+    shape,
+    length,
+    design,
+    extras,
+    pedicure,
+    inspirations,
+  } = req.body;
 
-  const requiredFields = !first_name || !last_name || !email || !phone_number;
+  const requiredGuetFields =
+    (first_name && last_name && email && phone_number) && (service || shape ||length || design  || extras || pedicure || inspirations)
 
-  if (requiredFields) {
+
+  if (!requiredGuetFields) {
     res.status(400).json({
       message: "Please fill all required fields",
     });
@@ -81,18 +97,13 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
       month: req.body.month,
       day: req.body.day,
       time: req.body.time,
-      services: {
-        nails: {
-          fullSet: req.body.services.nails.fullSet,
-          refill: req.body.services.nails.refill,
-          shape: req.body.services.nails.shape,
-          length: req.body.services.nails.length,
-          design: req.body.services.nails.design,
-          extras: req.body.services.nails.extras,
-        },
-        pedicure: req.body.services.pedicure,
-        addons: req.body.services.addons,
-      },
+      service: req.body.service,
+      shape: req.body.shape,
+      length: req.body.length,
+      design: req.body.design,
+      extras: req.body.extras,
+      pedicure: req.body.pedicure,
+      inspirations: req.body.inspirations,
     });
 
     const addAppointment = await db

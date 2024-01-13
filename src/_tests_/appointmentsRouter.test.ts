@@ -59,7 +59,6 @@ describe("Test appointments endpoints", () => {
         extras: ["any"],
       },
       pedicure: "false",
-      addons: "none",
     },
     user_id: new ObjectId(),
   };

@@ -102,6 +102,7 @@ if a guest user does not exist and the appointment has not been booked, it creat
 `last_name`
 `email`
 `phone_number`
+`service`
 
 **Example**
 
@@ -123,13 +124,14 @@ if a guest user does not exist and the appointment has not been booked, it creat
     "time": "10:00 AM",
     "services": {
       "nails": {
-        "service": "Full Set" ,
+        "service": "Full Set",
         "shape": "coffin",
         "length": "Shorties",
         "design": "any",
-        "extras": ["any"]
-      },
-      "pedicure": "false"
+        "extras": ["any"],
+        "pedicure": "Simple Pedicure",
+        "inspirations": []
+      }
     },
     "user_id": "655120c29020c753942fc57f"
   }
@@ -354,9 +356,10 @@ Required: Admin privileges.
         "shape": "coffin",
         "length": "Shorties",
         "design": "any",
-        "extras": ["any"]
-      },
-      "pedicure": "false"
+        "extras": ["any"],
+        "pedicure": "Simple Pedicure",
+        "inspirations": []
+      }
     },
     "user_id": "655120c29020c753942fc57f"
   }
@@ -380,7 +383,6 @@ Creates a new appointment if one doesn't already exist. This process involves va
 - `design` (string): The design of the nails.
 - `extras` (array of strings): Extra services, if any.
 - `pedicure` (boolean): Indicates if a pedicure is requested.
-- `addons` (string): Additional notes or addons.
 - `user_id` (string): The ID of the user associated with the appointment.
 
 **Example Request**:
@@ -391,16 +393,18 @@ Creates a new appointment if one doesn't already exist. This process involves va
   "month": 11,
   "day": 8,
   "time": "10:00 AM",
-  "service":"Refill",
+  "service": "Refill",
   "shape": "coffin",
   "length": "Shorties",
   "design": "any",
   "extras": ["any"],
   "pedicure": false,
-  "addons": "none",
+  "inspirations": [],
+
   "user_id": "655120c29020c753942fc57f"
 }
 ```
+
 ### PUT `/api/auth/appointments/:id`
 
 **Description:**:
@@ -418,7 +422,6 @@ Updates an exising appointment. Validates required information is included in th
 `design`
 `extras`
 `pedicure`
-`addons`
 
 **Required Body Parameteres**
 if updating an appointment:
@@ -438,14 +441,14 @@ if updating an appointment:
   "time": "10:00 AM",
   "services": {
     "nails": {
-      "service":"Refill",
+      "service": "Refill",
       "shape": "coffin",
       "length": "Shorties",
       "design": "any",
-      "extras": ["any"]
-    },
-    "pedicure": "false",
-    "addons": "none"
+      "extras": ["any"],
+      "pedicure": "Simple Pedicure",
+      "inspirations": []
+    }
   }
 }
 ```

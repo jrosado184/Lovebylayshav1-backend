@@ -49,42 +49,36 @@ describe("Test authentication endpoints", () => {
     month: 11,
     day: 8,
     time: "10:00 AM",
-    services: {
-      nails: {
-        fullSet: true,
-        refill: false,
-        shape: "coffin",
-        length: "Shorties",
-        design: "any",
-        extras: ["any"],
-      },
-      pedicure: "false",
-      addons: "none",
-    },
+    service: "Full Set",
+    shape: "coffin",
+    length: "Shorties",
+    design: "any",
+    extras: ["any"],
+    pedicure: "false",
+    inspirations: ["https://picsum.photos/200/300"],
     user_id: new ObjectId(),
   };
-  // test.todo("sanity");
 
-    test("/login", async () => {
-      const user = await request(server)
-        .post("/api/auth/registeredUsers")
-        .send(mockUser);
-      await db.collection("sessions").deleteMany({});
-      const registerUser = await request(server).post("/login").send({
-        email: "email",
-        password: "password",
-      });
-
-      const session = await db.collection("sessions").findOne({
-        "session.passport.user": user.body._id,
-      });
-
-      expect(session.session.passport.user).toBe(user.body._id);
-      expect(registerUser.status).toBe(200);
-      expect(registerUser.body).toMatchObject({
-  first_name: 'test',
-  last_name: 'example',
-  email: 'email',
-  });
+  test("/login", async () => {
+    const user = await request(server)
+      .post("/api/auth/registeredUsers")
+      .send(mockUser);
+    await db.collection("sessions").deleteMany({});
+    const registerUser = await request(server).post("/login").send({
+      email: "email",
+      password: "password",
     });
+
+    const session = await db.collection("sessions").findOne({
+      "session.passport.user": user.body._id,
+    });
+
+    expect(session.session.passport.user).toBe(user.body._id);
+    expect(registerUser.status).toBe(200);
+    expect(registerUser.body).toMatchObject({
+      first_name: "test",
+      last_name: "example",
+      email: "email",
+    });
+  });
 });
