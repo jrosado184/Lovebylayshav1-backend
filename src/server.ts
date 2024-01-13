@@ -14,6 +14,7 @@ import "./passport-config.js";
 import passport from "passport";
 import fileUpload from "express-fileupload";
 import { v2 as cloudinary } from "cloudinary";
+import bodyParser from "body-parser";
 dotenv.config();
 
 const server: Application = express();
@@ -31,6 +32,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+server.use(bodyParser.json({limit: '50mb'}));
+server.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 server.use(express.json());
 server.use(fileUpload());
 server.use(cors());
