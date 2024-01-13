@@ -108,33 +108,22 @@ if a guest user does not exist and the appointment has not been booked, it creat
 
 ```json
 {
-  "guestUser": {
-    "_id": "655120c29020c753942fc57f",
-    "appointment_id": ["655120c29020c753942fc57e"],
-    "first_name": "Javier",
-    "last_name": "Rosado",
-    "email": "test@example.com",
-    "phone_number": 123456789
-  },
-  "guestUserAppointment": {
-    "_id": "655120c29020c753942fc57e",
-    "year": 2023,
-    "month": 11,
-    "day": 8,
-    "time": "10:00 AM",
-    "services": {
-      "nails": {
-        "service": "Full Set",
-        "shape": "coffin",
-        "length": "Shorties",
-        "design": "any",
-        "extras": ["any"],
-        "pedicure": "Simple Pedicure",
-        "inspirations": []
-      }
-    },
-    "user_id": "655120c29020c753942fc57f"
-  }
+  "_id": "655120c29020c753942fc57f",
+  "first_name": "Javier",
+  "last_name": "Rosado",
+  "email": "test@example.com",
+  "phone_number": 123456789,
+  "year": 2023,
+  "month": 11,
+  "day": 8,
+  "time": "10:00 AM",
+  "service": "Full Set",
+  "shape": "coffin",
+  "length": "Shorties",
+  "design": "any",
+  "extras": ["any"],
+  "pedicure": "Simple Pedicure",
+  "inspirations": []
 }
 ```
 
@@ -332,36 +321,27 @@ Required: Admin privileges.
     "month": 11,
     "day": 8,
     "time": "10:00 AM",
-    "services": {
-      "nails": {
-        "service": "Refill",
-        "shape": "coffin",
-        "length": "Shorties",
-        "design": "any",
-        "extras": ["any"]
-      },
-      "pedicure": "false"
-    },
-    "user_id": "655120c29020c753942fc57f"
+    "service": "Refill",
+    "shape": "coffin",
+    "length": "Shorties",
+    "design": "any",
+    "extras": ["any"],
+    "pedicure": "false",
+    "inspirations": []
   },
   {
-    "_id": "655121729020c753942fc580",
+    "_id": "655120c29020c753942fc57e",
     "year": 2023,
-    "month": 12,
+    "month": 11,
     "day": 8,
     "time": "10:00 AM",
-    "services": {
-      "nails": {
-        "service": "Full Set",
-        "shape": "coffin",
-        "length": "Shorties",
-        "design": "any",
-        "extras": ["any"],
-        "pedicure": "Simple Pedicure",
-        "inspirations": []
-      }
-    },
-    "user_id": "655120c29020c753942fc57f"
+    "service": "Refill",
+    "shape": "coffin",
+    "length": "Shorties",
+    "design": "any",
+    "extras": ["any"],
+    "pedicure": "false",
+    "inspirations": []
   }
 ]
 ```
@@ -439,16 +419,12 @@ if updating an appointment:
   "month": 11,
   "day": 9,
   "time": "10:00 AM",
-  "services": {
-    "nails": {
-      "service": "Refill",
-      "shape": "coffin",
-      "length": "Shorties",
-      "design": "any",
-      "extras": ["any"],
-      "pedicure": "Simple Pedicure",
-      "inspirations": []
-    }
-  }
+  "service": "Refill",
+  "shape": "coffin",
+  "length": "Shorties",
+  "design": "any",
+  "extras": ["any"],
+  "pedicure": "Simple Pedicure",
+  "inspirations": []
 }
 ```
