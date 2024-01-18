@@ -2,13 +2,10 @@ import dotenv from "dotenv";
 import { MongoClient, ObjectId } from "mongodb";
 import server, { dbUri } from "../server.js";
 import request from "supertest";
-import { v2 as cloudinary } from "cloudinary";
+import {v2 as cloudinary } from "cloudinary";
+import { removeCloudinaryImage } from "../cloudinary/cloudinaryFunctions.js";
 
 dotenv.config();
-
-export const removeCloudinaryImage = async (id: string) => {
-  await cloudinary.api.delete_resources([id]);
-};
 
 describe("Test guest user endpoints", () => {
   let db: any;
@@ -37,7 +34,7 @@ describe("Test guest user endpoints", () => {
     await client.close();
   });
 
-  const mockUser = {
+  const mockUser: any = {
     first_name: "testFirst",
     last_name: "testLast",
     email: "test@example.com",
@@ -52,7 +49,7 @@ describe("Test guest user endpoints", () => {
     design: "Full Frenchies",
     extras: ["Soak Off"],
     pedicure: "none",
-    inspirations: ["https://picsum.photos/200/300"],
+    inspirations: [],
   };
 
   const mockUser1 = {
@@ -70,7 +67,7 @@ describe("Test guest user endpoints", () => {
     designs: "Full Frenchies",
     extras: ["Soak Off"],
     pedicure: null,
-    inspirations: ["https://picsum.photos/200/300"],
+    inspirations: [],
   };
 
   const mockUser2 = {
@@ -88,7 +85,7 @@ describe("Test guest user endpoints", () => {
     designs: "Full Frenchies",
     extras: ["Soak Off"],
     pedicure: null,
-    inspirations: ["https://picsum.photos/200/300"],
+    inspirations: [],
   };
 
   const mockAppointment = {
@@ -102,147 +99,141 @@ describe("Test guest user endpoints", () => {
     design: "Full Frenchies",
     extras: ["Soak Off"],
     pedicure: "none",
-    inspirations: ["https://picsum.photos/200/300"],
+    inspirations: [],
   };
 
-    test("GET /api/auth/guestUsers", async () => {
-      await db.collection("guest_users").insertOne(mockUser);
+  test("GET /api/auth/guestUsers", async () => {
+    await db.collection("guest_users").insertOne(mockUser);
 
-      const response = await request(server).get("/api/auth/guestUsers");
+    const response = await request(server).get("/api/auth/guestUsers");
 
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveLength(1);
-    }, 20000);
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+  }, 20000);
 
-    test("GET /api/auth/guestUsers/:id, success", async () => {
-      const addUser = await db.collection("guest_users").insertOne(mockUser);
+  test("GET /api/auth/guestUsers/:id, success", async () => {
+    const addUser = await db.collection("guest_users").insertOne(mockUser);
 
-      const userId = addUser.insertedId.toString();
+    const userId = addUser.insertedId.toString();
 
-      const response = await request(server).get(
-        `/api/auth/guestUsers/${userId}`
-      );
+    const response = await request(server).get(
+      `/api/auth/guestUsers/${userId}`
+    );
 
-      expect(response.status).toBe(200);
-    }, 20000);
+    expect(response.status).toBe(200);
+  }, 20000);
 
-    test("GET, /api/auth/guestUsers/:id, non-existing-id", async () => {
-      const userId = new ObjectId("7a2f0be9c82b");
+  test("GET, /api/auth/guestUsers/:id, non-existing-id", async () => {
+    const userId = new ObjectId("7a2f0be9c82b");
 
-      const response = await request(server).get(
-        `/api/auth/guestUsers/${userId}`
-      );
+    const response = await request(server).get(
+      `/api/auth/guestUsers/${userId}`
+    );
 
-      expect(response.status).toBe(404);
-    }, 20000);
+    expect(response.status).toBe(404);
+  }, 20000);
 
-    test("POST, /api/auth/guestUsers, success", async () => {
-      const response = await request(server)
-        .post("/api/auth/guestUsers")
-        .send(mockUser);
+  test("POST, /api/auth/guestUsers, success", async () => {
+    const response = await request(server)
+      .post("/api/auth/guestUsers")
+      .send(mockUser);
 
-      const guestUser = await db.collection("guest_users").findOne({
-        appointment_id: { $in: [new ObjectId(response.body._id)] },
-      });
+    const guestUser = await db.collection("guest_users").findOne({
+      appointment_id: { $in: [new ObjectId(response.body._id)] },
+    });
 
-      expect(response.status).toBe(201);
-      expect(response.body).toMatchObject({
-        first_name: "testFirst",
-        last_name: "testLast",
-        email: "test@example.com",
-        phone_number: 123456789,
-        year: 2023,
-        month: 9,
-        day: 29,
-        time: "9:00 PM",
-        service: "Full Set",
-        shape: "coffin",
-        length: "Shorties",
-        design: "Full Frenchies",
-        extras: ["Soak Off"],
-        pedicure: "none",
-      });
-      expect(guestUser).toMatchObject({
-        first_name: "testFirst",
-        last_name: "testLast",
-        email: "test@example.com",
-        phone_number: 123456789,
-      });
-  await removeCloudinaryImage(guestUser?.inspirations?.[0]?.public_id);
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      first_name: "testFirst",
+      last_name: "testLast",
+      email: "test@example.com",
+      phone_number: 123456789,
+      year: 2023,
+      month: 9,
+      day: 29,
+      time: "9:00 PM",
+      service: "Full Set",
+      shape: "coffin",
+      length: "Shorties",
+      design: "Full Frenchies",
+      extras: ["Soak Off"],
+      pedicure: "none",
+      inspirations: [],
+    });
+    expect(guestUser).toMatchObject({
+      first_name: "testFirst",
+      last_name: "testLast",
+      email: "test@example.com",
+      phone_number: 123456789,
+    });
 
-    }, 20000);
+  }, 20000);
 
-    test("POST, /api/auth.guestUsers, appointments belonging to one user are added to users appointment_id", async () => {
-      await request(server).post("/api/auth/guestUsers").send(mockUser);
-      await request(server).post("/api/auth/guestUsers").send(mockUser1);
+  test("POST, /api/auth.guestUsers, appointments belonging to one user are added to users appointment_id", async () => {
+    await request(server).post("/api/auth/guestUsers").send(mockUser);
+    await request(server).post("/api/auth/guestUsers").send(mockUser1);
 
-      const getGuestUser = await db.collection("guest_users").find().toArray();
+    const getGuestUser = await db.collection("guest_users").find().toArray();
 
-      expect(getGuestUser[0].appointment_id).toHaveLength(2);
+    expect(getGuestUser[0].appointment_id).toHaveLength(2);
 
-      const getAppointments = await db
-        .collection("appointments")
-        .find()
-        .toArray();
-      expect(getAppointments).toHaveLength(2);
-      expect(getAppointments[0].user_id).toEqual(getAppointments[1].user_id);
-     await removeCloudinaryImage(getAppointments[0]?.inspirations[0]?.public_id);
-    }, 20000);
+    const getAppointments = await db
+      .collection("appointments")
+      .find()
+      .toArray();
+    expect(getAppointments).toHaveLength(2);
+    expect(getAppointments[0].user_id).toEqual(getAppointments[1].user_id);
+  }, 20000);
 
-    test("POST, /api/auth/guestUsers, appointments belonging to separate users are handled individually", async () => {
-      await request(server).post("/api/auth/guestUsers").send(mockUser);
-      await request(server).post("/api/auth/guestUsers").send(mockUser2);
+  test("POST, /api/auth/guestUsers, appointments belonging to separate users are handled individually", async () => {
+    await request(server).post("/api/auth/guestUsers").send(mockUser);
+    await request(server).post("/api/auth/guestUsers").send(mockUser2);
 
-      const getGuestUsers = await db.collection("guest_users").find().toArray();
+    const getGuestUsers = await db.collection("guest_users").find().toArray();
 
-      expect(getGuestUsers).toHaveLength(2);
-      expect(getGuestUsers[0].appointment_id).toHaveLength(1);
-      expect(getGuestUsers[1].appointment_id).toHaveLength(1);
+    expect(getGuestUsers).toHaveLength(2);
+    expect(getGuestUsers[0].appointment_id).toHaveLength(1);
+    expect(getGuestUsers[1].appointment_id).toHaveLength(1);
 
-      const getAppointments = await db
-        .collection("appointments")
-        .find()
-        .toArray();
+    const getAppointments = await db
+      .collection("appointments")
+      .find()
+      .toArray();
 
-      expect(getAppointments).toHaveLength(2);
-      expect(getAppointments[0].user_id).not.toEqual(getAppointments[1].user_id);
-      await removeCloudinaryImage(getAppointments[0]?.inspirations[0]?.public_id);
-    }, 20000);
+    expect(getAppointments).toHaveLength(2);
+    expect(getAppointments[0].user_id).not.toEqual(getAppointments[1].user_id);
+  }, 20000);
 
-    test("POST, /api/auth/guestUsers, invalid-body", async () => {
-      const response = await request(server)
-        .post("/api/auth/guestUsers")
-        .send({ appointment: { year: 2023, month: 5, day: 11 } });
-      expect(response.status).toBe(400);
+  test("POST, /api/auth/guestUsers, invalid-body", async () => {
+    const response = await request(server)
+      .post("/api/auth/guestUsers")
+      .send({ appointment: { year: 2023, month: 5, day: 11 } });
+    expect(response.status).toBe(400);
+  }, 20000);
 
-      removeCloudinaryImage(response.body.inspirations?.[0]?.public_id);
-    }, 20000);
+  test("POST, /api/auth/guestUsers, does not create duplicate guest user", async () => {
+    await request(server).post("/api/auth/guestUsers").send(mockUser);
+    const response = await request(server)
+      .post("/api/auth/guestUsers")
+      .send(mockUser1);
 
-    test("POST, /api/auth/guestUsers, does not create duplicate guest user", async () => {
-      await request(server).post("/api/auth/guestUsers").send(mockUser);
-      const response = await request(server)
-        .post("/api/auth/guestUsers")
-        .send(mockUser1);
+    expect(response.status).toBe(201);
 
-      expect(response.status).toBe(201);
+    const guestUsers = await db.collection("guest_users").find().toArray();
+    expect(guestUsers).toHaveLength(1);
+  }, 20000);
 
-      const guestUsers = await db.collection("guest_users").find().toArray();
-      expect(guestUsers).toHaveLength(1);
-      await removeCloudinaryImage(guestUsers[0]?.inspirations?.[0]?.public_id);
-    }, 20000);
+  test("POST, /api/auth/guestUsers, does not allow duplicate appointments", async () => {
+    await request(server).post("/api/auth/guestUsers").send(mockUser);
+    const response = await request(server)
+      .post("/api/auth/guestUsers")
+      .send(mockUser);
 
-    test("POST, /api/auth/guestUsers, does not allow duplicate appointments", async () => {
-      await request(server).post("/api/auth/guestUsers").send(mockUser);
-      const response = await request(server)
-        .post("/api/auth/guestUsers")
-        .send(mockUser);
-
-      expect(response.status).toBe(400);
-      expect(response.body).toEqual({
-        message: "This appointment has already been booked",
-      });
-     await removeCloudinaryImage(response.body.inspirations?.[0]?.public_id);
-    }, 20000);
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      message: "This appointment has already been booked",
+    });
+  }, 20000);
 
   test("PUT, /api/auth/guestUsers, success", async () => {
     await request(server).post("/api/auth/guestUsers").send(mockUser);
@@ -256,7 +247,6 @@ describe("Test guest user endpoints", () => {
       });
     expect(response.status).toBe(200);
     expect(response.body.first_name).toBe("test2");
-    await removeCloudinaryImage(response.body.inspirations?.[0]?.public_id);
   }, 20000);
 
   test("PUT, /api/auth/guestUsers, fails if email already exists", async () => {
@@ -272,7 +262,6 @@ describe("Test guest user endpoints", () => {
     expect(response.body).toStrictEqual({
       message: "Cannot use existing email",
     });
-    await removeCloudinaryImage(response.body.inspirations?.[0]?.public_id);
   }, 20000);
 
   test("DELETE, /api/auth/guestUsers/:id", async () => {
@@ -286,10 +275,11 @@ describe("Test guest user endpoints", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toStrictEqual("Guest user successfully deleted");
-    await removeCloudinaryImage(response.body.inspirations?.[0]?.public_id);
   }, 20000);
 
   test("Cloudinary image upload", async () => {
+    mockUser.inspirations = ["https://picsum.photos/200/300"];
+
     const response = await request(server)
       .post("/api/auth/guestUsers")
       .send(mockUser);

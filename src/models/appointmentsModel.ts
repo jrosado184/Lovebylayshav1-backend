@@ -4,6 +4,7 @@ import mongoose, { Schema } from "mongoose";
 export interface AppointmentTypes {
   appointment_id: String;
   user_id: Object;
+  confirmation_code: String;
   year: Number;
   month: Number;
   day: Number;
@@ -26,6 +27,11 @@ const appointmentSchema = new Schema<AppointmentTypes>({
   user_id: {
     required: true,
     type: ObjectId,
+    unique: true,
+  },
+  confirmation_code: {
+    required: true,
+    type: String,
     unique: true,
   },
   year: {

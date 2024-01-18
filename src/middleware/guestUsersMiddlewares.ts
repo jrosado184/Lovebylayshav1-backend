@@ -1,10 +1,17 @@
 import { ObjectId } from "mongodb";
-import { v2 as cloudinary } from "cloudinary";
 import { connect } from "../server.js";
 import { NextFunction, Request, Response } from "express";
-import { GuestUser } from "../models/guestUsersModel.js";
 import { Appointment } from "../models/appointmentsModel.js";
-import { configDotenv } from "dotenv";
+import { randomCode } from "../tools/randomCode.js";
+import {
+  addGuestUserIdToAppointment,
+  findDocumentWithEmailOrPhoneNumber,
+  insertIntoDatabase,
+} from "../database/globalFunctions.js";
+import {
+  addAppointmentIdToGuestUser,
+  addNewGuestUser,
+} from "../database/guestsFunctions.js";
 
 export const checkIfGuestIdExists = async (
   req: Request,
@@ -46,8 +53,17 @@ export const checkifGuestProvidedBody = (
   } = req.body;
 
   const requiredGuetFields =
-    (first_name && last_name && email && phone_number) && (service || shape ||length || design  || extras || pedicure || inspirations)
-
+    first_name &&
+    last_name &&
+    email &&
+    phone_number &&
+    (service ||
+      shape ||
+      length ||
+      design ||
+      extras ||
+      pedicure ||
+      inspirations);
 
   if (!requiredGuetFields) {
     res.status(400).json({
@@ -93,6 +109,7 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
 
   try {
     const appointment = new Appointment({
+      confirmation_code: randomCode,
       year: req.body.year,
       month: req.body.month,
       day: req.body.day,
@@ -106,49 +123,29 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
       inspirations: req.body.inspirations,
     });
 
-    const addAppointment = await db
-      .collection("appointments")
-      .insertOne(appointment);
+    const addAppointment: any = await insertIntoDatabase(
+      db,
+      "appointments",
+      appointment
+    );
 
-    const existingGuestUsers = await db
-      .collection("guest_users")
-      .find({
-        $or: [{ email: email }, { phone_number: phone_number }],
-      })
-      .toArray();
+    const existingGuestUsers: any = await findDocumentWithEmailOrPhoneNumber(
+      db,
+      "guest_users",
+      email,
+      phone_number
+    );
 
     if (existingGuestUsers.length > 0) {
       res.locals.guestUserId = existingGuestUsers[0]._id.toString();
-      await db.collection("guest_users").updateOne(
-        { _id: new ObjectId(existingGuestUsers[0]._id.toString()) },
-        {
-          $push: {
-            appointment_id: new ObjectId(addAppointment.insertedId.toString()),
-          },
-        }
-      );
+      await addAppointmentIdToGuestUser(db, existingGuestUsers, addAppointment);
     } else {
-      const newGuestUserSchema = new GuestUser({
-        appointment_id: new ObjectId(addAppointment.insertedId.toString()),
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        email: req.body.email,
-        phone_number: req.body.phone_number,
-      });
-
-      const newGuestUser = await db
-        .collection("guest_users")
-        .insertOne(newGuestUserSchema);
+      const newGuestUser: any = await addNewGuestUser(db, req, addAppointment);
 
       res.locals.guestUserId = newGuestUser.insertedId.toString();
     }
 
-    await db.collection("appointments").updateOne(
-      { _id: new ObjectId(addAppointment.insertedId.toString()) },
-      {
-        $set: { user_id: new ObjectId(res.locals.guestUserId) },
-      }
-    );
+    await addGuestUserIdToAppointment(db, "appointments", addAppointment, res);
     next();
   } catch (error) {
     next(error);

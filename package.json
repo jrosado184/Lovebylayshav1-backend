@@ -10,7 +10,7 @@
     "start": "node --es-module-specifier-resolution=node dist/index.js",
     "build": "tsc",
     "deploy": "npm run build && git push heroku main"
-  },
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

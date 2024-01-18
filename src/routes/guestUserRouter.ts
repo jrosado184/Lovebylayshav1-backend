@@ -1,7 +1,6 @@
 import express from "express";
 import { connect } from "../server.js";
-import { Db, ObjectId } from "mongodb";
-import { v2 as cloudinary } from "cloudinary";
+import { ObjectId } from "mongodb";
 import {
   checkIfAppoinmentAlreadyExists,
   checkIfEmailToUpdateExists,
@@ -9,6 +8,8 @@ import {
   checkIfGuestIdExists,
   checkifGuestProvidedBody,
 } from "../middleware/guestUsersMiddlewares.js";
+import { getGuestAppointment, getGuestUser } from "../database/guestsFunctions.js";
+import { uploadImagesToCloud } from "../cloudinary/cloudinaryFunctions.js";
 
 const router = express.Router();
 
@@ -76,45 +77,6 @@ router.post(
   }
 );
 
-const getGuestUser = (db: Db, guestUserId: string) => {
-  return db
-    .collection("guest_users")
-    .findOne(
-      { _id: new ObjectId(guestUserId) },
-      { projection: { appointment_id: 0, user_id: 0 } }
-    );
-};
-
-const getGuestAppointment = (db: Db, guestUserId: string) => {
-  return db
-    .collection("appointments")
-    .findOne(
-      { user_id: new ObjectId(guestUserId) },
-      { projection: { user_id: 0 } }
-    );
-};
-
-const updateAppointment = async (db: Db, guestUserId: string, req: any) => {
-  await db
-    .collection("appointments")
-    .updateOne(
-      { user_id: new ObjectId(guestUserId) },
-      { $set: { inspirations: req?.body?.inspirations } }
-    );
-  return getGuestAppointment(db, guestUserId);
-};
-
-const uploadImagesToCloud = async (db: Db, guestUserId: string, req: any) => {
-  const { inspirations } = req.body;
-
-  if (inspirations && inspirations.length > 0) {
-    for (let i = 0; i < inspirations.length; i++) {
-      const image = await cloudinary.uploader.upload(inspirations[i]);
-      inspirations[i] = { url: image.url, public_id: image.public_id };
-    }
-    await updateAppointment(db, guestUserId, req);
-  }
-};
 
 router.put(
   "/api/auth/guestUsers/:id",

@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import { MongoClient, ObjectId } from "mongodb";
 import server, { dbUri } from "../server";
 import request from "supertest";
-import { removeCloudinaryImage } from "./guestUserRouter.test";
 
 dotenv.config();
 
@@ -45,7 +44,7 @@ describe("Test user auth endpoints", () => {
     designs: "Full Frenchies",
     extras: ["Soak Off"],
     pedicure: null,
-    inspirations: ["https://picsum.photos/200/300"],
+    inspirations: [],
   };
 
   const mockUser = {
@@ -158,7 +157,6 @@ describe("Test user auth endpoints", () => {
     expect(String(appointmentId[0].user_id)).toBe(
       registeredUserResponse.body._id
     );
-   await removeCloudinaryImage(registeredUserResponse.body.inspirations?.[0]?.public_id);
   }, 20000);
 
   test("POST, /api/auth/registeredUsers, does not allow duplicate users", async () => {
