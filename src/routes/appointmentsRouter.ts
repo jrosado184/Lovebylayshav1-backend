@@ -7,6 +7,11 @@ import {
   checkUpdateBody,
 } from "../middleware/appointmentsMiddlewares.js";
 import { checkIfAppoinmentAlreadyExists } from "../middleware/guestUsersMiddlewares.js";
+import {
+  deleteDocumentById,
+  findOneDocumentById,
+  updateDocumentById,
+} from "../database/globalFunctions.js";
 
 const router = Router();
 
@@ -82,23 +87,21 @@ router.put(
   async (req, res) => {
     const db = await connect();
     try {
-      const updateUser = await db.collection("appointments").updateOne(
-        {
-          _id: new ObjectId(req.params.id),
-        },
-        {
-          $set: req.body,
+      await updateDocumentById(
+        db,
+        "appointments",
+        req,
+        req.body
+      ).then((user: any) => {
+        if (user.modifiedCount === 1) {
+          findOneDocumentById(db, "appointments", req).then(
+            user => {
+              res.json(user);
+            }
+          )
+          
         }
-      );
-
-      const getUpdatedUser = await db.collection("appointments").findOne({
-        _id: new ObjectId(req.params.id),
-      });
-      if (updateUser.modifiedCount === 1) {
-        res.json(getUpdatedUser);
-      } else {
-        res.json("No field updated");
-      }
+      })
     } catch (error) {
       res.status(500).json({
         message: "There was an error updating appointment",
@@ -115,15 +118,13 @@ router.delete(
     const db = await connect();
 
     try {
-      const deleteUser = await db.collection("appointments").deleteOne({
-        _id: new ObjectId(req.params.id),
+      await deleteDocumentById(db, "appointments", req).then((data: any) => {
+        if (data.deletedCount === 1) {
+          res.status(200).json({
+            message: "appointment successfully deleted",
+          });
+        }
       });
-
-      if (deleteUser.deletedCount === 1) {
-        res.status(200).json({
-          message: "appointment successfully deleted",
-        });
-      }
     } catch (error) {
       res.status(500).json({
         message: "Internal Error, There was an error deleting appointment",

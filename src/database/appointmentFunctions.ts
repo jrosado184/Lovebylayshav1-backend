@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { getGuestAppointment } from "./guestsFunctions";
 
-export const updateAppointment = async (
+export const updateAppointmentInspirationsURL = async (
   db: any,
   guestUserId: string,
   req: any
