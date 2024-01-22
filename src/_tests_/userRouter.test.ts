@@ -10,7 +10,9 @@ describe("Test user auth endpoints", () => {
   let client: any;
 
   beforeAll(async () => {
-    client = await MongoClient.connect(dbUri, {});
+    client = await MongoClient.connect(dbUri, {
+      maxPoolSize: 10,
+    });
     db = client.db("testing");
   });
 
@@ -26,8 +28,8 @@ describe("Test user auth endpoints", () => {
     await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
     await db.collection("sessions").deleteMany({});
-    await client.close();
-  });
+    await client.close(true);
+    });
 
   const guestMockUser = {
     first_name: "testFirst",

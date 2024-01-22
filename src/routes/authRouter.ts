@@ -3,6 +3,10 @@ import passport from "passport";
 import "./../passport-config.js";
 import { ObjectId } from "mongodb";
 import { connect } from "../server.js";
+import {
+  findOneDocumentById,
+  throwError,
+} from "../database/globalFunctions.js";
 
 const router = Router();
 
@@ -10,11 +14,13 @@ router.post(
   "/login",
   passport.authenticate("local"),
   async (req: any, res, next) => {
-    const db = await connect();
-    const userInformation = await db
-      .collection("registered_users")
-      .findOne({ _id: new ObjectId(req?.user?._id) });
-    res.json(userInformation);
+    try {
+      findOneDocumentById("registered_users", req.user._id).then((user) => {
+        res.json(user);
+      });
+    } catch (err) {
+      throwError(err, res);
+    }
   }
 );
 

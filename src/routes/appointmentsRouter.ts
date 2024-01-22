@@ -9,26 +9,23 @@ import {
 import { checkIfAppoinmentAlreadyExists } from "../middleware/guestUsersMiddlewares.js";
 import {
   deleteDocumentById,
+  findAllDocuments,
   findOneDocumentById,
+  insertIntoDatabase,
+  throwError,
   updateDocumentById,
 } from "../database/globalFunctions.js";
+import { addAppointmentIdToRegisteredUser } from "../database/appointmentFunctions.js";
 
 const router = Router();
 
 router.get("/api/auth/appointments", async (req, res) => {
-  const db = await connect();
-
   try {
-    const allAppointments = await db
-      .collection("appointments")
-      .find()
-      .toArray();
-    res.json(allAppointments);
-  } catch (err) {
-    res.status(500).json({
-      message: "There was an error retreiving the appointments",
-      err: err,
+    findAllDocuments("appointments").then((appointments) => {
+      res.json(appointments);
     });
+  } catch (err) {
+    throwError(err, res);
   }
 });
 
@@ -36,8 +33,6 @@ router.post(
   "/api/auth/appointments",
   checkIfAppoinmentAlreadyExists,
   async (req, res) => {
-    const db = await connect();
-
     const appointment = new Appointment({
       year: req.body.year,
       month: req.body.month,
@@ -54,28 +49,22 @@ router.post(
     });
 
     try {
-      const addedAppointment = await db
-        .collection("appointments")
-        .insertOne(appointment);
+      const db = await connect();
 
-      const getAddedAppointment = await db.collection("appointments").findOne({
-        _id: new ObjectId(addedAppointment.insertedId.toString()),
-      });
-
-      await db.collection("registered_users").updateOne(
-        { _id: new ObjectId(req.body.user_id) },
-        {
-          $push: {
-            "appointments.upcoming": addedAppointment.insertedId,
-          },
+      insertIntoDatabase("appointments", appointment).then(
+        (addedAppointment: any) => {
+          addAppointmentIdToRegisteredUser(addedAppointment, req).then(() => {
+            findOneDocumentById(
+              "appointments",
+              addedAppointment.insertedId
+            ).then((user) => {
+              res.status(201).json(user);
+            });
+          });
         }
       );
-
-      res.status(201).json(getAddedAppointment);
     } catch (err) {
-      res.status(500).json({
-        message: "There was an error adding an appointments",
-      });
+      throwError(err, res);
     }
   }
 );
@@ -87,26 +76,17 @@ router.put(
   async (req, res) => {
     const db = await connect();
     try {
-      await updateDocumentById(
-        db,
-        "appointments",
-        req,
-        req.body
-      ).then((user: any) => {
-        if (user.modifiedCount === 1) {
-          findOneDocumentById(db, "appointments", req).then(
-            user => {
+      await updateDocumentById("appointments", req, req.body).then(
+        (user: any) => {
+          if (user.modifiedCount === 1) {
+            findOneDocumentById("appointments", req.params.id).then((user) => {
               res.json(user);
-            }
-          )
-          
+            });
+          }
         }
-      })
+      );
     } catch (error) {
-      res.status(500).json({
-        message: "There was an error updating appointment",
-        error: error,
-      });
+      throwError(error, res);
     }
   }
 );
@@ -118,7 +98,7 @@ router.delete(
     const db = await connect();
 
     try {
-      await deleteDocumentById(db, "appointments", req).then((data: any) => {
+      await deleteDocumentById("appointments", req).then((data: any) => {
         if (data.deletedCount === 1) {
           res.status(200).json({
             message: "appointment successfully deleted",
@@ -126,10 +106,7 @@ router.delete(
         }
       });
     } catch (error) {
-      res.status(500).json({
-        message: "Internal Error, There was an error deleting appointment",
-        error: error,
-      });
+      throwError(error, res);
     }
   }
 );

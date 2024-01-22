@@ -124,13 +124,11 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
     });
 
     const addAppointment: any = await insertIntoDatabase(
-      db,
       "appointments",
       appointment
     );
 
     const existingGuestUsers: any = await findDocumentWithEmailOrPhoneNumber(
-      db,
       "guest_users",
       email,
       phone_number
@@ -138,14 +136,14 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
 
     if (existingGuestUsers.length > 0) {
       res.locals.guestUserId = existingGuestUsers[0]._id.toString();
-      await addAppointmentIdToGuestUser(db, existingGuestUsers, addAppointment);
+      await addAppointmentIdToGuestUser(existingGuestUsers, addAppointment);
     } else {
-      const newGuestUser: any = await addNewGuestUser(db, req, addAppointment);
+      const newGuestUser: any = await addNewGuestUser(req, addAppointment);
 
       res.locals.guestUserId = newGuestUser.insertedId.toString();
     }
 
-    await addGuestUserIdToAppointment(db, "appointments", addAppointment, res);
+    await addGuestUserIdToAppointment("appointments", addAppointment, res);
     next();
   } catch (error) {
     next(error);

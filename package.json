@@ -5,12 +5,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "tsc && export NODE_ENV=testing && jest _tests_ --detectOpenHandles --maxWorkers=4 --watch",
+    "guestUserTests": "tsc && export NODE_ENV=testing && jest _tests_/guestUserRouter.test.ts --detectOpenHandles --maxWorkers=4",
+    "appointmentTests": "tsc && export NODE_ENV=testing && jest _tests_/appointmentsRouter.test.ts --detectOpenHandles --maxWorkers=4",
+    "userTests": "tsc && export NODE_ENV=testing && jest _tests_/userRouter.test.ts --detectOpenHandles --maxWorkers=4",
+    "authTests": "tsc && export NODE_ENV=testing && jest _tests_/authRouter.test.ts --detectOpenHandles --maxWorkers=4",
+    "test": "./run-tests.sh",
     "dev": "nodemon --watch src -e ts --exec \"tsc && node --es-module-specifier-resolution=node dist/index.js\"",
     "start": "node --es-module-specifier-resolution=node dist/index.js",
     "build": "tsc",
     "deploy": "npm run build && git push heroku main"
-},
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -60,6 +64,7 @@
     "mocha": "^10.2.0",
     "mongodb-memory-server": "^8.15.1",
     "nock": "^13.3.3",
+    "npm-run-all": "^4.1.5",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1"
   }

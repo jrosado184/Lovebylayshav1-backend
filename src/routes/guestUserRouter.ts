@@ -24,10 +24,8 @@ import {
 const router = express.Router();
 
 router.get("/api/auth/guestUsers", async (req, res) => {
-  const db = await connect();
-
   try {
-    findAllDocuments(db, "guest_users").then((users) => {
+    findAllDocuments("guest_users").then((users) => {
       res.json(users);
     });
   } catch (error) {
@@ -39,10 +37,8 @@ router.get(
   "/api/auth/guestUsers/:id",
   checkIfGuestIdExists,
   async (req, res) => {
-    const db = await connect();
-
     try {
-      findOneDocumentById(db, "guest_users", req).then((user) => {
+      findOneDocumentById("guest_users", req.params.id).then((user) => {
         res.json(user);
       });
     } catch (error) {
@@ -59,19 +55,14 @@ router.post(
   checkIfAppoinmentAlreadyExists,
   checkIfGuestAlreadyExistsAndAddUser,
   async (req, res, next) => {
-    const db = await connect();
-
     const guestUserId = res.locals.guestUserId;
 
     try {
-      const guestUser = await getGuestUser(db, guestUserId);
+      const guestUser = await getGuestUser(guestUserId);
 
-      await uploadImagesToCloud(db, guestUserId, req);
+      await uploadImagesToCloud(guestUserId, req);
 
-      const updatedGuestAppointment = await getGuestAppointment(
-        db,
-        guestUserId
-      );
+      const updatedGuestAppointment = await getGuestAppointment(guestUserId);
 
       const guestUserWithAppointmentInformation = {
         ...guestUser,
@@ -91,19 +82,18 @@ router.put(
   checkIfAppoinmentAlreadyExists,
   checkIfEmailToUpdateExists,
   async (req, res) => {
-    const db = await connect();
     const guestUserInfo = req.body;
 
     try {
-      await updateDocumentById(db, "guest_users", req, guestUserInfo).then(
-        (user) => {
-          if (user.modifiedCount === 1) {
-            findOneDocumentById(db, "guest_users", req).then((user) => {
-              res.json(user);
-            });
-          }
+      updateDocumentById("guest_users", req, guestUserInfo).then((user) => {
+        if (user.modifiedCount === 1) {
+          findOneDocumentById("guest_users", req.params.id).then(
+            (updatedUser) => {
+              res.json(updatedUser);
+            }
+          );
         }
-      );
+      });
     } catch (error) {
       throwError(error, res);
     }
@@ -111,13 +101,10 @@ router.put(
 );
 
 router.delete("/api/auth/guestUsers/:id", async (req, res) => {
-  const db = await connect();
   try {
-    await deleteDocumentById(db, "guest_users", req).then((user) => {
+    await deleteDocumentById("guest_users", req).then((user) => {
       if (user.deletedCount === 1) {
-        res.status(200).json({
-          message: "guest user successfully deleted",
-        });
+        res.status(200).json("Guest user successfully deleted");
       }
     });
   } catch (error) {

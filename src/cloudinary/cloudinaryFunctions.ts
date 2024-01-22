@@ -1,9 +1,8 @@
 import { Db } from "mongodb";
 import { v2 as cloudinary } from "cloudinary";
-import {updateAppointmentInspirationsURL } from "../database/appointmentFunctions";
+import {updateAppointmentInspirationsURL } from "../database/appointmentFunctions.js";
 
 export const uploadImagesToCloud = async (
-  db: Db,
   guestUserId: string,
   req: any
 ) => {
@@ -16,7 +15,7 @@ export const uploadImagesToCloud = async (
       });
       inspirations[i] = { url: image.url, public_id: image.public_id };
     }
-    await updateAppointmentInspirationsURL(db, guestUserId, req);
+    await updateAppointmentInspirationsURL(guestUserId, req);
   }
 };
 

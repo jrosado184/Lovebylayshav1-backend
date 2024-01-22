@@ -1,8 +1,10 @@
 import { Db, ObjectId } from "mongodb";
-import { GuestUser } from "../models/guestUsersModel";
-import { insertIntoDatabase } from "./globalFunctions";
+import { GuestUser } from "../models/guestUsersModel.js";
+import { insertIntoDatabase } from "./globalFunctions.js";
+import { connect } from "../server.js";
 
-export const getGuestUser = (db: Db, guestUserId: string) => {
+export const getGuestUser = async (guestUserId: string) => {
+  const db = await connect();
   return db
     .collection("guest_users")
     .findOne(
@@ -11,13 +13,14 @@ export const getGuestUser = (db: Db, guestUserId: string) => {
     );
 };
 
-export const getGuestAppointment = (db: Db, guestUserId: string) => {
+export const getGuestAppointment = async (guestUserId: string) => {
+  const db = await connect();
   return db
     .collection("appointments")
     .findOne({ user_id: new ObjectId(guestUserId) });
 };
 
-export const addNewGuestUser = async (db: Db, req: any, appointment: any) => {
+export const addNewGuestUser = async (req: any, appointment: any) => {
   const newGuestUserSchema = new GuestUser({
     appointment_id: new ObjectId(appointment.insertedId.toString()),
     first_name: req.body.first_name,
@@ -27,7 +30,6 @@ export const addNewGuestUser = async (db: Db, req: any, appointment: any) => {
   });
 
   const newGuestUser: any = await insertIntoDatabase(
-    db,
     "guest_users",
     newGuestUserSchema
   );
@@ -36,10 +38,10 @@ export const addNewGuestUser = async (db: Db, req: any, appointment: any) => {
 };
 
 export const addAppointmentIdToGuestUser = async (
-  db: any,
   existingGuestUsers: any,
   addAppointment: any
 ) => {
+  const db = await connect();
   return await db.collection("guest_users").updateOne(
     { _id: new ObjectId(existingGuestUsers[0]._id.toString()) },
     {
@@ -49,5 +51,3 @@ export const addAppointmentIdToGuestUser = async (
     }
   );
 };
-
-

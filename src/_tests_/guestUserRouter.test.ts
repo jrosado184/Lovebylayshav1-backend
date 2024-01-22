@@ -2,19 +2,18 @@ import dotenv from "dotenv";
 import { MongoClient, ObjectId } from "mongodb";
 import server, { dbUri } from "../server.js";
 import request from "supertest";
-import {v2 as cloudinary } from "cloudinary";
 import { removeCloudinaryImage } from "../cloudinary/cloudinaryFunctions.js";
 
 dotenv.config();
 
 describe("Test guest user endpoints", () => {
   let db: any;
-  let client: any;
-
-  test("sanity", () => {});
+  let client: MongoClient;
 
   beforeAll(async () => {
-    client = await MongoClient.connect(dbUri, {});
+    client = await MongoClient.connect(dbUri, {
+      maxPoolSize: 10,
+    });
     db = client.db("testing");
   });
 
@@ -31,8 +30,10 @@ describe("Test guest user endpoints", () => {
     await db.collection("appointments").deleteMany({});
     await db.collection("registered_users").deleteMany({});
     await db.collection("sessions").deleteMany({});
-    await client.close();
+    await client.close(true);
   });
+
+
 
   const mockUser: any = {
     first_name: "testFirst",
@@ -102,6 +103,8 @@ describe("Test guest user endpoints", () => {
     inspirations: [],
   };
 
+  test("sanity", () => {});
+
   test("GET /api/auth/guestUsers", async () => {
     await db.collection("guest_users").insertOne(mockUser);
 
@@ -159,6 +162,7 @@ describe("Test guest user endpoints", () => {
       extras: ["Soak Off"],
       pedicure: "none",
       inspirations: [],
+      confirmation_code: expect.any(String),
     });
     expect(guestUser).toMatchObject({
       first_name: "testFirst",

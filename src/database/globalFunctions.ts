@@ -1,27 +1,29 @@
 import { ObjectId } from "mongodb";
+import { connect } from "../server.js";
 
 //****************** Find ********************/
 
-export const findAllDocuments = async (db: any, collection_name: string) => {
+export const findAllDocuments = async (collection_name: string) => {
+  const db = await connect();
   return await db.collection(collection_name).find().toArray();
 };
 
 export const findOneDocumentById = async (
-  db: any,
   collection_name: string,
-  req: any
+  id: any
 ) => {
+  const db = await connect();
   return await db.collection(collection_name).findOne({
-    _id: new ObjectId(req.params.id),
+    _id: new ObjectId(id),
   });
 };
 
 export const findDocumentWithEmailOrPhoneNumber = async (
-  db: any,
   collection_name: string,
   value1: string,
   value2: string
 ) => {
+  const db = await connect();
   return await db
     .collection(collection_name)
     .find({
@@ -33,19 +35,19 @@ export const findDocumentWithEmailOrPhoneNumber = async (
 //****************** Insert ********************/
 
 export const insertIntoDatabase = async (
-  db: any,
   collection_name: string,
   document: any
 ) => {
+  const db = await connect();
   return await db.collection(collection_name).insertOne(document);
 };
 
 export const addGuestUserIdToAppointment = async (
-  db: any,
   collection_name: string,
   document: any,
   res: any
 ) => {
+  const db = await connect();
   return await db.collection(collection_name).updateOne(
     { _id: new ObjectId(document.insertedId.toString()) },
     {
@@ -57,11 +59,11 @@ export const addGuestUserIdToAppointment = async (
 //****************** Update ********************/
 
 export const updateDocumentById = async (
-  db: any,
   collection_name: string,
   req: any,
   value: any
 ) => {
+  const db = await connect();
   return await db.collection(collection_name).updateOne(
     {
       _id: new ObjectId(req.params.id),
@@ -74,23 +76,19 @@ export const updateDocumentById = async (
 
 //****************** Delete ********************/
 
-export const deleteDocumentById = async (
-  db: any,
-  collection_name: string,
-  req: any
-) => {
+export const deleteDocumentById = async (collection_name: string, req: any) => {
+  const db = await connect();
   return await db.collection(collection_name).deleteOne({
     _id: new ObjectId(req.params.id),
   });
 };
 
-
 //****************** Errors ********************/
 
-export const throwError = (message: any, res:any, custom?: string) => {
+export const throwError = (message: any, res: any, custom?: string) => {
   res.status(500).json({
     message: message,
-    error: custom
-  })
+    error: custom,
+  });
   console.log(message);
-}
+};

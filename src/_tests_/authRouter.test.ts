@@ -10,7 +10,9 @@ describe("Test authentication endpoints", () => {
   let client: any;
 
   beforeAll(async () => {
-    client = await MongoClient.connect(dbUri, {});
+    client = await MongoClient.connect(dbUri, {
+      maxPoolSize: 50,
+    });
     db = client.db("testing");
   });
 
@@ -26,8 +28,8 @@ describe("Test authentication endpoints", () => {
     await db.collection("registered_users").deleteMany({});
     await db.collection("appointments").deleteMany({});
     await db.collection("sessions").deleteMany({});
-    await client.close();
-  });
+    await client.close(true);
+    });
 
   const mockUser = {
     first_name: "test",
