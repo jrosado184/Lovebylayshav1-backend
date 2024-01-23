@@ -76,10 +76,10 @@ export const updateDocumentById = async (
 
 //****************** Delete ********************/
 
-export const deleteDocumentById = async (collection_name: string, req: any) => {
+export const deleteDocumentById = async (collection_name: string, id: any) => {
   const db = await connect();
   return await db.collection(collection_name).deleteOne({
-    _id: new ObjectId(req.params.id),
+    _id: new ObjectId(id),
   });
 };
 

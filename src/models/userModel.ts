@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import passportLocalMongoose from "passport-local-mongoose";
 
 export interface UserTypes {
-  auth0UserId: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -18,11 +17,6 @@ export interface UserTypes {
   administrative_rights: boolean;
 }
 export const registerNewUserSchema = new Schema<UserTypes>({
-  auth0UserId: {
-    required: true,
-    type: String,
-    unique: true,
-  },
   first_name: {
     required: true,
     type: String,

@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { connect } from "../server.js";
 import { Appointment } from "../models/appointmentsModel.js";
-import { ObjectId } from "mongodb";
 import {
   checkIfIdExists,
   checkUpdateBody,
+  removeGuestUserIfOnlyOneAppointmentExists,
 } from "../middleware/appointmentsMiddlewares.js";
-import { checkIfAppoinmentAlreadyExists } from "../middleware/guestUsersMiddlewares.js";
+import { checkIfAppoinmentAlreadyExists } from "../middleware/appointmentsMiddlewares.js";
 import {
   deleteDocumentById,
   findAllDocuments,
@@ -38,19 +38,17 @@ router.post(
       month: req.body.month,
       day: req.body.day,
       time: req.body.time,
-      service: req.body.services.nails.service,
-      shape: req.body.services.nails.shape,
-      length: req.body.services.nails.length,
-      design: req.body.services.nails.design,
-      extras: req.body.services.nails.extras,
-      pedicure: req.body.services.pedicure,
-      inspirations: req.body.services.inspirations,
+      service: req.body.service,
+      shape: req.body.shape,
+      length: req.body.length,
+      design: req.body.design,
+      extras: req.body.extras,
+      pedicure: req.body.pedicure,
+      inspirations: req.body.inspirations,
       user_id: req.body.user_id,
     });
 
     try {
-      const db = await connect();
-
       insertIntoDatabase("appointments", appointment).then(
         (addedAppointment: any) => {
           addAppointmentIdToRegisteredUser(addedAppointment, req).then(() => {
@@ -94,16 +92,11 @@ router.put(
 router.delete(
   "/api/auth/appointments/:id",
   checkIfIdExists,
+  removeGuestUserIfOnlyOneAppointmentExists,
   async (req, res) => {
-    const db = await connect();
-
     try {
-      await deleteDocumentById("appointments", req).then((data: any) => {
-        if (data.deletedCount === 1) {
-          res.status(200).json({
-            message: "appointment successfully deleted",
-          });
-        }
+      res.status(200).json({
+        message: "appointment successfully deleted",
       });
     } catch (error) {
       throwError(error, res);

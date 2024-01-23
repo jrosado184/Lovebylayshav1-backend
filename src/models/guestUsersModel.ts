@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
 export interface GuestUserTypes {
-  auth0UserId: String;
   appointment_id: Array<String> | String;
   first_name: String;
   last_name: String;
@@ -10,11 +9,6 @@ export interface GuestUserTypes {
 }
 
 const registerNewGuestUserSchema = new Schema<GuestUserTypes>({
-  auth0UserId: {
-    required: true,
-    type: String,
-    unique: true,
-  },
   appointment_id: {
     required: true,
     type: Array<String>,

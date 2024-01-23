@@ -1,8 +1,5 @@
 import express from "express";
-import { connect } from "../server.js";
-import { ObjectId } from "mongodb";
 import {
-  checkIfAppoinmentAlreadyExists,
   checkIfEmailToUpdateExists,
   checkIfGuestAlreadyExistsAndAddUser,
   checkIfGuestIdExists,
@@ -20,6 +17,7 @@ import {
   throwError,
   updateDocumentById,
 } from "../database/globalFunctions.js";
+import { checkIfAppoinmentAlreadyExists } from "../middleware/appointmentsMiddlewares.js";
 
 const router = express.Router();
 
@@ -99,17 +97,5 @@ router.put(
     }
   }
 );
-
-router.delete("/api/auth/guestUsers/:id", async (req, res) => {
-  try {
-    await deleteDocumentById("guest_users", req).then((user) => {
-      if (user.deletedCount === 1) {
-        res.status(200).json("Guest user successfully deleted");
-      }
-    });
-  } catch (error) {
-    throwError(error, res);
-  }
-});
 
 export default router;

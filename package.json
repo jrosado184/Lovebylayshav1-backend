@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "guestUserTests": "tsc && export NODE_ENV=testing && jest _tests_/guestUserRouter.test.ts --detectOpenHandles --maxWorkers=4",
+    "guestUserTests": "tsc && export NODE_ENV=testing && jest _tests_/guestUserRouter.test.ts --detectOpenHandles --maxWorkers=4 --watch",
     "appointmentTests": "tsc && export NODE_ENV=testing && jest _tests_/appointmentsRouter.test.ts --detectOpenHandles --maxWorkers=4",
     "userTests": "tsc && export NODE_ENV=testing && jest _tests_/userRouter.test.ts --detectOpenHandles --maxWorkers=4",
     "authTests": "tsc && export NODE_ENV=testing && jest _tests_/authRouter.test.ts --detectOpenHandles --maxWorkers=4",

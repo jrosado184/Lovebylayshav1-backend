@@ -74,30 +74,6 @@ export const checkifGuestProvidedBody = (
   }
 };
 
-export const checkIfGuestHasMultipleAppointments = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-  firstAppointmentId?: string
-) => {
-  const db = await connect();
-
-  const { email, phone_number } = req.body;
-
-  try {
-    const allGuestUsers = await db
-      .collection("appointments")
-      .find({
-        email: email,
-        phone_number: phone_number,
-      })
-      .toArray();
-    return firstAppointmentId;
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const checkIfGuestAlreadyExistsAndAddUser = async (
   req: Request,
   res: Response,
@@ -145,35 +121,6 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
 
     await addGuestUserIdToAppointment("appointments", addAppointment, res);
     next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const checkIfAppoinmentAlreadyExists = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { year, month, day, time } = req.body;
-
-  try {
-    const db = await connect();
-
-    const appointmentAlreadyExists = await db
-      .collection("appointments")
-      .find({
-        $and: [{ year: year }, { month: month }, { day: day }, { time: time }],
-      })
-      .toArray();
-
-    if (appointmentAlreadyExists.length > 0) {
-      res.status(400).json({
-        message: "This appointment has already been booked",
-      });
-    } else {
-      next();
-    }
   } catch (error) {
     next(error);
   }
