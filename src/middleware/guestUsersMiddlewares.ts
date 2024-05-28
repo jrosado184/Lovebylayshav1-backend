@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 import { connect } from "../server.js";
 import { NextFunction, Request, Response } from "express";
 import { Appointment } from "../models/appointmentsModel.js";
-import { randomCode } from "../tools/randomCode.js";
+import generateRandomCode from "../tools/randomCode.js";
 import {
   addGuestUserIdToAppointment,
   findDocumentWithEmailOrPhoneNumber,
@@ -84,6 +84,7 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
   const { email, phone_number } = req.body;
 
   try {
+    const randomCode = await generateRandomCode();
     const appointment = new Appointment({
       confirmation_code: randomCode,
       year: req.body.year,
