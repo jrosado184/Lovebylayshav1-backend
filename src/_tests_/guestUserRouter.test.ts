@@ -33,8 +33,6 @@ describe("Test guest user endpoints", () => {
     await client.close(true);
   });
 
-
-
   const mockUser: any = {
     first_name: "testFirst",
     last_name: "testLast",
@@ -170,7 +168,6 @@ describe("Test guest user endpoints", () => {
       email: "test@example.com",
       phone_number: 123456789,
     });
-
   }, 20000);
 
   test("POST, /api/auth.guestUsers, appointments belonging to one user are added to users appointment_id", async () => {
@@ -269,16 +266,12 @@ describe("Test guest user endpoints", () => {
   }, 20000);
 
   test("DELETE, /api/auth/guestUsers/:id", async () => {
-    await request(server).post("/api/auth/guestUsers").send(mockUser);
-
-
-
+    // await request(server).post("/api/auth/guestUsers").send(mockUser);
     // const response = await request(server).delete(
     //   `/api/auth/guestUsers/${guestUserId[0]._id}`
     // );
-
-  //   expect(response.status).toBe(200);
-  //   expect(response.body).toStrictEqual("Guest user successfully deleted");
+    // expect(response.status).toBe(200);
+    // expect(response.body).toStrictEqual("Guest user successfully deleted");
   }, 20000);
 
   test("Cloudinary image upload", async () => {

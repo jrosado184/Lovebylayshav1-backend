@@ -6,6 +6,7 @@ import { Db, MongoClient } from "mongodb";
 import userRouter from "./routes/userRouter.js";
 import guestUserRouter from "./routes/guestUserRouter.js";
 import appointmentsRouter from "./routes/appointmentsRouter.js";
+import galleryRouter from "./routes/galleryRouter.js";
 import authRouter from "./routes/authRouter.js";
 import configENV from "./configENV.js";
 import session from "express-session";
@@ -32,27 +33,28 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-server.use(bodyParser.json({limit: '50mb'}));
-server.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+server.use(bodyParser.json({ limit: "50mb" }));
+server.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 server.use(express.json());
 server.use(fileUpload());
 server.use(cors());
 server.use(morgan("dev"));
-  server.use(
-    session({
-      secret: process.env.SECRET ?? "",
-      resave: false,
-      saveUninitialized: true,
-      cookie: { maxAge: 60 * 60 * 1000 },
-      store: store,
-    })
-  );
+server.use(
+  session({
+    secret: process.env.SECRET ?? "",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 60 * 60 * 1000 },
+    store: store,
+  })
+);
 server.use(passport.initialize());
 server.use(passport.session());
 server.use(userRouter);
 server.use(guestUserRouter);
 server.use(appointmentsRouter);
 server.use(authRouter);
+server.use(galleryRouter);
 
 export const connect = async (): Promise<Db> => {
   try {
@@ -64,8 +66,8 @@ export const connect = async (): Promise<Db> => {
   }
 };
 
-server.get("/", (req,res) => {
-  res.status(200).json("Lovebylaysha's server")
-})
+server.get("/", (req, res) => {
+  res.status(200).json("Lovebylaysha's server");
+});
 
 export default server;

@@ -29,7 +29,7 @@ describe("Test user auth endpoints", () => {
     await db.collection("appointments").deleteMany({});
     await db.collection("sessions").deleteMany({});
     await client.close(true);
-    });
+  });
 
   const guestMockUser = {
     first_name: "testFirst",
@@ -120,11 +120,11 @@ describe("Test user auth endpoints", () => {
   }, 20000);
 
   test("POST, /api/auth/registeredUsers, success (includes existing guest user)", async () => {
-   const guestUserRequest= await request(server)
+    const guestUserRequest = await request(server)
       .post("/api/auth/guestUsers")
       .send(guestMockUser);
 
-      const guestUser = await db.collection("guest_users").find().toArray();
+    const guestUser = await db.collection("guest_users").find().toArray();
 
     expect(guestUserRequest.status).toBe(201);
 
@@ -142,7 +142,6 @@ describe("Test user auth endpoints", () => {
     const registeredUserResponse = await request(server)
       .post("/api/auth/registeredUsers")
       .send(mockUser);
-
 
     expect(registeredUserResponse.status).toBe(201);
 

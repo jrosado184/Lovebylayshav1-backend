@@ -428,3 +428,25 @@ if updating an appointment:
   "inspirations": []
 }
 ```
+### DELETE /api/auth/appointments/:id
+
+**Description:**
+Deletes an appointment based on the provided ID. The endpoint includes middleware that checks the validity of the ID and handles specific cases for guest users.
+
+**Middleware Sequence:**
+
+	1.	checkIfIdExists: Validates that the appointment ID exists in the system. If the ID is not found, an error is returned.
+	2.	removeGuestUserIfOnlyOneAppointmentExists: If the appointment belongs to a guest user and it’s their only appointment, this middleware will also remove the guest user from the system.
+
+  `DELETE /api/auth/appointments/12345`
+
+``` json
+ {
+  "message": "appointment successfully deleted"
+}
+```
+
+**Error Handling:**
+
+	•	If the appointment ID does not exist, a 404 Not Found error may be returned.
+	•	If there’s a server-side error during the deletion process, a 500 Internal Server Error response will be generated with details of the error.
