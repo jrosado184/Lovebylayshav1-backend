@@ -14,7 +14,7 @@ export interface UserTypes {
   };
   createdAt: Date;
   updatedAt: Date;
-  administrative_rights: boolean;
+  role: string;
 }
 export const registerNewUserSchema = new Schema<UserTypes>({
   first_name: {
@@ -55,9 +55,10 @@ export const registerNewUserSchema = new Schema<UserTypes>({
   updatedAt: {
     type: Date,
   },
-  administrative_rights: {
-    required: false,
-    type: Boolean,
+  role: {
+    type: String,
+    enum: ["user", "admin", "superadmin"],
+    default: "user",
   },
 });
 

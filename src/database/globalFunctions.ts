@@ -8,10 +8,7 @@ export const findAllDocuments = async (collection_name: string) => {
   return await db.collection(collection_name).find().toArray();
 };
 
-export const findOneDocumentById = async (
-  collection_name: string,
-  id: any
-) => {
+export const findOneDocumentById = async (collection_name: string, id: any) => {
   const db = await connect();
   return await db.collection(collection_name).findOne({
     _id: new ObjectId(id),

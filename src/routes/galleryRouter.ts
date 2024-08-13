@@ -3,8 +3,11 @@ import { connect } from "../server.js";
 import { Gallery } from "../models/galleryModel.js";
 import {
   findAllDocuments,
+  findOneDocumentById,
   insertIntoDatabase,
 } from "../database/globalFunctions.js";
+import passport from "passport";
+import { authenticate } from "../middleware/authMiddlewares.js";
 
 const router = Router();
 
@@ -16,7 +19,7 @@ router.get("/api/auth/gallery", async (req, res) => {
   }
 });
 
-router.post("/api/auth/gallery", async (req, res) => {
+router.post("/api/auth/gallery", authenticate, async (req, res) => {
   try {
     const newImage = new Gallery({
       user_id: req.body.user_id,
@@ -26,7 +29,8 @@ router.post("/api/auth/gallery", async (req, res) => {
       upload_date: new Date(),
       tags: req.body.tags,
     });
-    const image = insertIntoDatabase("gallery", newImage);
+    const insertImage = await insertIntoDatabase("gallery", newImage);
+    const image = await findOneDocumentById("gallery", insertImage.insertedId);
     res.json(image);
   } catch (error: any) {
     throw Error(error);
