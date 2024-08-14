@@ -69,6 +69,7 @@ router.post(
       password: req.body.password,
       phone_number: req.body.phone_number,
       date_of_birth: req.body.date_of_birth,
+      avatar: req.body.avatar,
       appointments: {
         upcoming: upcomingAppointments || [],
         past: [],

@@ -8,6 +8,7 @@ export interface UserTypes {
   password: string;
   phone_number: number;
   date_of_birth: number;
+  avatar: string;
   appointments: {
     upcoming: Array<string>;
     past: [];
@@ -40,6 +41,10 @@ export const registerNewUserSchema = new Schema<UserTypes>({
   date_of_birth: {
     required: false,
     type: Number,
+  },
+  avatar: {
+    default:
+      "https://res-console.cloudinary.com/dalc1edol/media_explorer_thumbnails/f8a7a6ff92a0558955bea513e09821bd/detailed",
   },
   appointments: {
     upcoming: {
