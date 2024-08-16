@@ -9,6 +9,7 @@
     "appointmentTests": "tsc && export NODE_ENV=testing && jest _tests_/appointmentsRouter.test.ts --detectOpenHandles --maxWorkers=4",
     "userTests": "tsc && export NODE_ENV=testing && jest _tests_/userRouter.test.ts --detectOpenHandles --maxWorkers=4",
     "authTests": "tsc && export NODE_ENV=testing && jest _tests_/authRouter.test.ts --detectOpenHandles --maxWorkers=4",
+    "galleryTests": "tsc && export NODE_ENV=testing && jest _tests_/galleryRouter.test.ts --detectOpenHandles --maxWorkers=4 --watch",
     "test": "./run-tests.sh",
     "dev": "nodemon --watch src -e ts --exec \"tsc && node --es-module-specifier-resolution=node dist/index.js\"",
     "start": "node --es-module-specifier-resolution=node dist/index.js",

@@ -42,10 +42,7 @@ export const registerNewUserSchema = new Schema<UserTypes>({
     required: false,
     type: Number,
   },
-  avatar: {
-    default:
-      "https://res-console.cloudinary.com/dalc1edol/media_explorer_thumbnails/f8a7a6ff92a0558955bea513e09821bd/detailed",
-  },
+  avatar: {},
   appointments: {
     upcoming: {
       type: Array<String>,

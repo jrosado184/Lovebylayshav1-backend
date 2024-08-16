@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { MongoClient, ObjectId } from "mongodb";
 import server, { dbUri } from "../server";
 import request from "supertest";
+import { mockUser, guestMockUser } from "./testUtils";
 
 dotenv.config();
 
@@ -30,39 +31,6 @@ describe("Test user auth endpoints", () => {
     await db.collection("sessions").deleteMany({});
     await client.close(true);
   });
-
-  const guestMockUser = {
-    first_name: "testFirst",
-    last_name: "testLast",
-    email: "email",
-    phone_number: 123456789,
-    year: 2023,
-    month: 9,
-    day: 29,
-    time: "9:00 PM",
-    service: "Full Set",
-    shape: "coffin",
-    length: "Shorties",
-    designs: "Full Frenchies",
-    extras: ["Soak Off"],
-    pedicure: null,
-    inspirations: [],
-  };
-
-  const mockUser = {
-    first_name: "test",
-    last_name: "example",
-    email: "email",
-    password: "password",
-    phone_number: 123456789,
-    appointments: {
-      upcoming: [],
-      past: [],
-    },
-    createdAt: "today",
-    updatedAt: "today",
-    administrative_rights: false,
-  };
 
   test("sanity", () => {});
 

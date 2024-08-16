@@ -1,33 +1,42 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
+import { ObjectId } from "mongodb";
 
 interface GalleryTypes {
-  user_id: String;
-  category: String;
-  url: String;
-  title: String;
-  upload_date: String;
-  tags: Array<String>;
+  user_id: Object;
+  category: string;
+  url: string;
+  title: string;
+  upload_date: string;
+  tags: string[];
 }
 
-const galleryschema = new Schema<GalleryTypes>({
-  user_id: {
-    required: true,
-    type: String,
+const gallerySchema = new Schema<GalleryTypes>(
+  {
+    user_id: {
+      type: ObjectId,
+      ref: "registered_users",
+      required: true,
+    },
+    category: {
+      type: String,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+    title: {
+      type: String,
+    },
+    upload_date: {
+      type: String,
+    },
+    tags: {
+      type: [String],
+    },
   },
-  category: {
-    type: String,
-  },
-  url: {
-    type: String,
-    required: true,
-  },
-  title: {
-    type: String,
-  },
-  upload_date: {
-    type: String,
-  },
-  tags: {},
-});
+  {
+    collection: "gallery", // Explicitly set the collection name
+  }
+);
 
-export const Gallery = mongoose.model<GalleryTypes>("images", galleryschema);
+export const Gallery = mongoose.model<GalleryTypes>("gallery", gallerySchema);
