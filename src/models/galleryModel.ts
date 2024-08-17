@@ -26,6 +26,7 @@ const gallerySchema = new Schema<GalleryTypes>(
     },
     title: {
       type: String,
+      required: true,
     },
     upload_date: {
       type: String,
@@ -35,7 +36,7 @@ const gallerySchema = new Schema<GalleryTypes>(
     },
   },
   {
-    collection: "gallery", // Explicitly set the collection name
+    collection: "gallery",
   }
 );
 

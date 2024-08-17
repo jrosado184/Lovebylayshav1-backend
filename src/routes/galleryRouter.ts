@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { Gallery } from "./../models/galleryModel.js";
 import {
+  deleteDocumentById,
   findAllDocuments,
   findOneDocumentById,
   insertIntoDatabase,
@@ -9,14 +10,6 @@ import { authenticate } from "../middleware/authMiddlewares.js";
 import { connect } from "../server.js";
 
 const router = Router();
-
-// router.get("/api/auth/gallery", async (req, res) => {
-//   try {
-//     findAllDocuments("gallery").then((images) => res.json(images));
-//   } catch (error: any) {
-//     throw Error(error);
-//   }
-// });
 
 router.get("/api/auth/gallery", async (req, res) => {
   try {
@@ -48,10 +41,19 @@ router.get("/api/auth/gallery", async (req, res) => {
           },
         },
       ])
-      .toArray(); // Convert the aggregation result to an array
+      .toArray();
     res.json(imagesWithUserDetails);
   } catch (error) {
     console.log(error);
+  }
+});
+
+router.get("/api/auth/gallery/:id", async (req, res) => {
+  try {
+    const getGalleryById = await findOneDocumentById("gallery", req.params.id);
+    res.json(getGalleryById);
+  } catch (error: any) {
+    throw Error(error);
   }
 });
 
@@ -68,6 +70,16 @@ router.post("/api/auth/gallery", authenticate, async (req, res) => {
     const insertImage = await insertIntoDatabase("gallery", newImage);
     const image = await findOneDocumentById("gallery", insertImage.insertedId);
     res.status(201).json(image);
+  } catch (error: any) {
+    throw Error(error);
+  }
+});
+
+router.delete("/api/auth/gallery/:id", async (req, res) => {
+  try {
+    await findOneDocumentById("gallery", req.params.id);
+    const response = await deleteDocumentById("gallery", req.params.id);
+    res.json(response);
   } catch (error: any) {
     throw Error(error);
   }

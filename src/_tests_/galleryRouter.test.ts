@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 import server, { dbUri } from "../server.js";
 import request from "supertest";
-import { mockUser } from "./testUtils.js";
+import { mockUser, mockImage, uploadImageAndGetCookies } from "./testUtils.js";
 
 describe("Test Gallery Endpoints", () => {
   let db: any;
@@ -33,15 +33,6 @@ describe("Test Gallery Endpoints", () => {
     await client.close(true);
   });
 
-  const mockImage = {
-    _id: "66bd495ac2d874ec775b2707",
-    category: "Nails",
-    user_id: "",
-    url: "test",
-    upload_date: "Wed Aug 14 2024 20:18:34 GMT-0400 (Eastern Daylight Time)",
-    tags: ["test"],
-  };
-
   test("POST /api/auth/gallery, unauthenticated users can not upload images to the gallery", async () => {
     const response = await request(server)
       .post("/api/auth/gallery")
@@ -52,20 +43,13 @@ describe("Test Gallery Endpoints", () => {
   });
 
   test("POST /api/auth/gallery, authenticated users can upload images to the gallery", async () => {
-    const loginResponse = await request(server).post("/login").send({
-      email: "email",
-      password: "password",
-    });
+    const { postResponse } = await uploadImageAndGetCookies(
+      server,
+      mockImage
+      //Helper funtion that sets a cookie after log in and upload an image
+    );
 
-    //Extract cookies from the login response
-    const cookies = loginResponse.headers["set-cookie"]; // Capture session cookies
-
-    const response = await request(server)
-      .post("/api/auth/gallery")
-      .set("Cookie", cookies) // Pass the session cookies to the next request
-      .send(mockImage);
-
-    expect(response.status).toBe(201);
+    expect(postResponse.status).toBe(201);
   });
 
   test("GET /api/auth/gallery, return all images with their respective user information", async () => {
@@ -85,12 +69,39 @@ describe("Test Gallery Endpoints", () => {
 
     const response = await request(server).get("/api/auth/gallery");
 
-    console.log(response.body);
-
     expect(response.status).toBe(200);
     expect(response.body[0].user_information).toMatchObject({
       first_name: "test",
       last_name: "example",
+    });
+  });
+
+  test("GET, /api/auth/gallery, return an image with id", async () => {
+    const { postResponse } = await uploadImageAndGetCookies(server, mockImage);
+    const imageById = await request(server).get(
+      `/api/auth/gallery/${postResponse.body._id}`
+    );
+    expect(imageById.status).toBe(200);
+    expect(imageById.body).toMatchObject({
+      _id: imageById.body._id,
+      user_id: imageById.body.user_id,
+      category: "Nails",
+      url: "test",
+      title: "title",
+      upload_date: imageById.body.upload_date,
+      tags: ["test"],
+    });
+  });
+
+  test("DELETE, /api/auth/gallery, removes an image from the gallery", async () => {
+    const { postResponse } = await uploadImageAndGetCookies(server, mockImage);
+    const deleteReq = await request(server).delete(
+      `/api/auth/gallery/${postResponse.body._id}`
+    );
+    expect(deleteReq.status).toBe(200);
+    expect(deleteReq.body).toEqual({
+      acknowledged: true,
+      deletedCount: 1,
     });
   });
 });
