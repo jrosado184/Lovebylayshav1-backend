@@ -365,6 +365,7 @@ Creates a new appointment if one doesn't already exist. This process involves va
 - `pedicure` (boolean): Indicates if a pedicure is requested.
 - `user_id` (string): The ID of the user associated with the appointment.
 
+
 **Example Request**:
 
 ```json
@@ -380,8 +381,9 @@ Creates a new appointment if one doesn't already exist. This process involves va
   "extras": ["any"],
   "pedicure": false,
   "inspirations": [],
-
-  "user_id": "655120c29020c753942fc57f"
+  "user_id": "655120c29020c753942fc57f",
+  "createdAt": "Sun Aug 18 2024 14:57:02 GMT-0400 (Eastern Daylight Time)",
+  "updatedAt": "Sun Aug 18 2024 14:57:02 GMT-0400 (Eastern Daylight Time)"
 }
 ```
 
