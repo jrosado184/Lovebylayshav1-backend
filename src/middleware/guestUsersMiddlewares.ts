@@ -98,6 +98,8 @@ export const checkIfGuestAlreadyExistsAndAddUser = async (
       extras: req.body.extras,
       pedicure: req.body.pedicure,
       inspirations: req.body.inspirations,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     const addAppointment: any = await insertIntoDatabase(

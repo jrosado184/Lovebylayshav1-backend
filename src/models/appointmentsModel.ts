@@ -16,6 +16,8 @@ export interface AppointmentTypes {
   extras: Array<String>;
   pedicure: String;
   inspirations: Array<String>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const appointmentSchema = new Schema<AppointmentTypes>({
@@ -67,6 +69,12 @@ const appointmentSchema = new Schema<AppointmentTypes>({
     type: String,
   },
   inspirations: {},
+  createdAt: {
+    type: String,
+  },
+  updatedAt: {
+    type: String,
+  },
 });
 
 export const Appointment = mongoose.model<AppointmentTypes>(

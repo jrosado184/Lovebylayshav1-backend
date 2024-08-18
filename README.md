@@ -15,7 +15,6 @@ Allows a user that has a registered account to log in.
 ```json
 {
   "_id": "user_id",
-  "appointment_id": ["appointment_id"],
   "first_name": "test",
   "last_name": "test",
   "email": "test@example.com",
@@ -174,13 +173,14 @@ Required: Admin privileges.
     "email": "user@example.com",
     "password": "hashedPassword",
     "phone_number": "123-456-7890",
+    "avatar": "image url",
     "appointments": {
       "upcoming": [],
       "past": []
     },
     "createdAt": "2023-10-30T09:24:21.898Z",
     "updatedAt": "2023-10-30T09:24:21.898Z",
-    "administrative_rights": false
+    "role": "user"
   }
 ]
 ```

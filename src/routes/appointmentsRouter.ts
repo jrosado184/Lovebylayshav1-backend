@@ -46,6 +46,8 @@ router.post(
       pedicure: req.body.pedicure,
       inspirations: req.body.inspirations,
       user_id: req.body.user_id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     try {
