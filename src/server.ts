@@ -33,6 +33,14 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://www.lovebylaysha.com" // Production domain
+      : ["http://localhost:5173"], // Development domains
+  credentials: true, // Allow credentials (cookies, etc.)
+};
+
 server.use(bodyParser.json({ limit: "50mb" }));
 server.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 server.use(express.json());
