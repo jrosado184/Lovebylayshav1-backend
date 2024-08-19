@@ -16,6 +16,7 @@ import passport from "passport";
 import fileUpload from "express-fileupload";
 import { v2 as cloudinary } from "cloudinary";
 import bodyParser from "body-parser";
+import ip from "ip";
 dotenv.config();
 
 const server: Application = express();
@@ -36,9 +37,12 @@ cloudinary.config({
 const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
-      ? "https://www.lovebylaysha.com" // Production domain
-      : ["http://localhost:5173"], // Development domains
-  credentials: true, // Allow credentials (cookies, etc.)
+      ? "https://www.lovebylaysha.com"
+      : [
+          `http://${ip.address()}:${process.env.FRONT_END_PORT}`,
+          `http://locaalhost:${process.env.FRONT_END_PORT}`,
+        ], // Dynamic IP address for development
+  credentials: true,
 };
 
 server.use(bodyParser.json({ limit: "50mb" }));
