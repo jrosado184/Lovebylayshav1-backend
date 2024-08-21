@@ -39,8 +39,8 @@ const corsOptions = {
     process.env.NODE_ENV === "production"
       ? "https://www.lovebylaysha.com"
       : [
-          `http://${ip.address()}:${process.env.FRONT_END_PORT}`,
-          `http://localhost:${process.env.FRONT_END_PORT}`,
+          `https://${ip.address()}:${process.env.FRONT_END_PORT}`,
+          `https://localhost:${process.env.FRONT_END_PORT}`,
         ], // Dynamic IP address for development
   credentials: true,
 };
@@ -58,9 +58,9 @@ server.use(
     saveUninitialized: true,
     cookie: {
       maxAge: 60 * 60 * 1000, // 1 hour expiration
-      httpOnly: true, // Helps to prevent cross-site scripting attacks
-      secure: process.env.NODE_ENV === "production", // Only send cookies over HTTPS in production
-      sameSite: "lax", // CSRF protection,
+      httpOnly: true, // Prevent access via JavaScript
+      secure: true, // Ensure the cookie is only sent over HTTPS
+      sameSite: "none", // Allow cross-site requests
     },
     store: store,
   })
