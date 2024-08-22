@@ -3,8 +3,9 @@ import https from "https";
 import fs from "fs";
 
 const options = {
-  key: fs.readFileSync("localhost+2-key.pem"),
-  cert: fs.readFileSync("localhost+2.pem"),
+  key: fs.readFileSync("/Users/javierrosado/Desktop/my-server-key.pem"),
+  cert: fs.readFileSync("/Users/javierrosado/Desktop/my-server-cert.pem"),
+  ca: fs.readFileSync("/Users/javierrosado/Desktop/my-ca-cert.pem"),
 };
 
 const port: any = process.env.PORT || 9000;
