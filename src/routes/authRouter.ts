@@ -22,6 +22,13 @@ router.post(
   }
 );
 
+router.get("/check-auth", (req, res) => {
+  try {
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
 router.get("/logout", (req, res, next) => {
   if ("passport" in req.session) {
     req.logout((err) => {
@@ -35,6 +42,7 @@ router.get("/logout", (req, res, next) => {
               .status(500)
               .json({ message: "Session destruction failed", error: err });
           } else {
+            res.clearCookie("connect.sid");
             res.json({ message: "Logout and session destruction successful" });
           }
         });
