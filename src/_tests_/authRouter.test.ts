@@ -29,7 +29,7 @@ describe("Test authentication endpoints", () => {
     await db.collection("appointments").deleteMany({});
     await db.collection("sessions").deleteMany({});
     await client.close(true);
-    });
+  });
 
   const mockUser = {
     first_name: "test",
@@ -84,3 +84,4 @@ describe("Test authentication endpoints", () => {
     });
   });
 });
+

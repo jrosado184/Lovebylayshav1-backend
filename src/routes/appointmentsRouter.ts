@@ -16,6 +16,7 @@ import {
   updateDocumentById,
 } from "../database/globalFunctions.js";
 import { addAppointmentIdToRegisteredUser } from "../database/appointmentFunctions.js";
+import generateRandomCode from "../tools/randomCode.js";
 
 const router = Router();
 
@@ -33,7 +34,9 @@ router.post(
   "/api/auth/appointments",
   checkIfAppoinmentAlreadyExists,
   async (req, res) => {
+    const randomCode = await generateRandomCode();
     const appointment = new Appointment({
+      confirmation_code: randomCode,
       year: req.body.year,
       month: req.body.month,
       day: req.body.day,

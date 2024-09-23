@@ -7,6 +7,7 @@ import userRouter from "./routes/userRouter.js";
 import guestUserRouter from "./routes/guestUserRouter.js";
 import appointmentsRouter from "./routes/appointmentsRouter.js";
 import galleryRouter from "./routes/galleryRouter.js";
+import techsRouter from "./routes/techsRoutes.js";
 import authRouter from "./routes/authRouter.js";
 import configENV from "./configENV.js";
 import session from "express-session";
@@ -72,6 +73,7 @@ server.use(guestUserRouter);
 server.use(appointmentsRouter);
 server.use(authRouter);
 server.use(galleryRouter);
+server.use(techsRouter);
 
 export const connect = async (): Promise<Db> => {
   try {

@@ -40,9 +40,52 @@ router.get(
     try {
       const user = await db
         .collection("registered_users")
-        .findOne({ _id: new ObjectId(userId) });
-
-      res.json(user);
+        .aggregate([
+          {
+            $match: {
+              _id: new ObjectId(userId),
+            },
+          },
+          {
+            $lookup: {
+              from: "appointments",
+              localField: "appointments.upcoming",
+              foreignField: "_id",
+              as: "upcomingAppointments",
+            },
+          },
+          {
+            //$project stage to modify the output and combine the appointment IDs with their details.
+            $project: {
+              first_name: 1,
+              last_name: 1,
+              email: 1,
+              phone_number: 1,
+              avatar: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              role: 1,
+              // Replace the appointments field with IDs and populated data
+              "appointments.upcoming": {
+                $map: {
+                  input: { $range: [0, { $size: "$appointments.upcoming" }] },
+                  as: "idx",
+                  in: {
+                    $arrayElemAt: ["$upcomingAppointments", "$$idx"],
+                  },
+                },
+              },
+            },
+          },
+        ])
+        .toArray();
+      if (user.length > 0) {
+        res.json(user[0]);
+      } else {
+        res.status(404).json({
+          message: `user with id ${userId} not found`,
+        });
+      }
     } catch (error) {
       res.status(500).json({
         message: `There was an error retreiving the user with id ${userId}`,

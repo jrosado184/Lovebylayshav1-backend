@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { connect } from "../server.js";
+import { Request, Response } from "express";
 
 //****************** Find ********************/
 
@@ -42,7 +43,7 @@ export const insertIntoDatabase = async (
 export const addGuestUserIdToAppointment = async (
   collection_name: string,
   document: any,
-  res: any
+  res: Response
 ) => {
   const db = await connect();
   return await db.collection(collection_name).updateOne(
@@ -57,7 +58,7 @@ export const addGuestUserIdToAppointment = async (
 
 export const updateDocumentById = async (
   collection_name: string,
-  req: any,
+  req: Request,
   value: any
 ) => {
   const db = await connect();
@@ -82,7 +83,7 @@ export const deleteDocumentById = async (collection_name: string, id: any) => {
 
 //****************** Errors ********************/
 
-export const throwError = (message: any, res: any, custom?: string) => {
+export const throwError = (message: any, res: Response, custom?: string) => {
   res.status(500).json({
     message: message,
     error: custom,
