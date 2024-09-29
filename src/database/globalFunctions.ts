@@ -58,8 +58,8 @@ export const addGuestUserIdToAppointment = async (
 
 export const updateDocumentById = async (
   collection_name: string,
-  req: Request,
-  value: any
+  value: any,
+  req: Request
 ) => {
   const db = await connect();
   return await db.collection(collection_name).updateOne(
@@ -68,6 +68,23 @@ export const updateDocumentById = async (
     },
     {
       $set: value,
+    }
+  );
+};
+
+export const updateDocumentAndPushById = async (
+  collection_name: string,
+  value: any,
+  req?: Request,
+  id?: string
+) => {
+  const db = await connect();
+  return await db.collection(collection_name).updateOne(
+    {
+      _id: new ObjectId(req?.params.id ?? id),
+    },
+    {
+      $push: value,
     }
   );
 };

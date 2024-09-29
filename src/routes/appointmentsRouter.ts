@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { connect } from "../server.js";
+import { ObjectId } from "mongodb";
 import { Appointment } from "../models/appointmentsModel.js";
 import {
   checkIfIdExists,
@@ -13,6 +14,7 @@ import {
   findOneDocumentById,
   insertIntoDatabase,
   throwError,
+  updateDocumentAndPushById,
   updateDocumentById,
 } from "../database/globalFunctions.js";
 import { addAppointmentIdToRegisteredUser } from "../database/appointmentFunctions.js";
@@ -36,6 +38,7 @@ router.post(
   async (req, res) => {
     const randomCode = await generateRandomCode();
     const appointment = new Appointment({
+      tech_id: req.body.tech_id,
       confirmation_code: randomCode,
       year: req.body.year,
       month: req.body.month,
@@ -61,6 +64,14 @@ router.post(
               "appointments",
               addedAppointment.insertedId
             ).then((user) => {
+              updateDocumentAndPushById(
+                "techs",
+                {
+                  tech_appointments: new ObjectId(user?._id),
+                },
+                undefined,
+                user?.tech_id
+              );
               res.status(201).json(user);
             });
           });
@@ -71,6 +82,10 @@ router.post(
     }
   }
 );
+
+//LEFT OFF ADDING APPOINTMENT ID TO TECHS APPOINTMENTS
+//TODO: FIGURE OUT WHAT WAY TO CAPTURE TECH INFO
+//WRITE TESTS FOR THESE ACTIONS
 
 router.put(
   "/api/auth/appointments/:id",

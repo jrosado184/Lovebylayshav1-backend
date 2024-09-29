@@ -36,7 +36,6 @@ router.get(
   async (req, res) => {
     const db = await connect();
     const userId = req.params.id;
-
     try {
       const user = await db
         .collection("registered_users")
@@ -47,6 +46,7 @@ router.get(
             },
           },
           {
+            // Lookup upcoming appointments
             $lookup: {
               from: "appointments",
               localField: "appointments.upcoming",
@@ -55,7 +55,49 @@ router.get(
             },
           },
           {
-            //$project stage to modify the output and combine the appointment IDs with their details.
+            // Unwind the upcoming appointments to process them individually
+            $unwind: "$upcomingAppointments",
+          },
+          {
+            // Lookup the tech details for each appointment
+            $lookup: {
+              from: "techs",
+              localField: "upcomingAppointments.tech_id",
+              foreignField: "_id",
+              as: "techDetails",
+            },
+          },
+          {
+            // Unwind the tech details
+            $unwind: {
+              path: "$techDetails",
+              preserveNullAndEmptyArrays: true, // In case there's no tech for the appointment
+            },
+          },
+          {
+            // Rebuild the user document with the merged appointments and tech details
+            $group: {
+              _id: "$_id",
+              first_name: { $first: "$first_name" },
+              last_name: { $first: "$last_name" },
+              email: { $first: "$email" },
+              phone_number: { $first: "$phone_number" },
+              avatar: { $first: "$avatar" },
+              createdAt: { $first: "$createdAt" },
+              updatedAt: { $first: "$updatedAt" },
+              role: { $first: "$role" },
+              upcomingAppointments: {
+                $push: {
+                  $mergeObjects: [
+                    "$upcomingAppointments",
+                    { tech: "$techDetails" }, // Merges tech details into the appointment
+                  ],
+                },
+              },
+            },
+          },
+          {
+            // Final projection to format the output
             $project: {
               first_name: 1,
               last_name: 1,
@@ -65,30 +107,23 @@ router.get(
               createdAt: 1,
               updatedAt: 1,
               role: 1,
-              // Replace the appointments field with IDs and populated data
-              "appointments.upcoming": {
-                $map: {
-                  input: { $range: [0, { $size: "$appointments.upcoming" }] },
-                  as: "idx",
-                  in: {
-                    $arrayElemAt: ["$upcomingAppointments", "$$idx"],
-                  },
-                },
-              },
+              "appointments.upcoming": "$upcomingAppointments",
             },
           },
         ])
         .toArray();
-      if (user.length > 0) {
+
+      if (user.length >= 0) {
         res.json(user[0]);
       } else {
         res.status(404).json({
-          message: `user with id ${userId} not found`,
+          message: `User with id ${userId} not found`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({
-        message: `There was an error retreiving the user with id ${userId}`,
+        message: `There was an error retrieving the user with id ${userId}`,
+        error: error?.message,
       });
     }
   }
@@ -98,44 +133,45 @@ router.post(
   checkIfUserProvidedBody,
   checkIfUserAlreadyExists,
   async (req, res) => {
-    const db = await connect();
-
-    const upcomingAppointments: any = await checkIfNewUserHasBookedAsGuest(
-      req,
-      res
-    );
-
-    const newUser = new User({
-      first_name: req.body.first_name,
-      last_name: req.body.last_name,
-      email: req.body.email,
-      password: req.body.password,
-      phone_number: req.body.phone_number,
-      date_of_birth: req.body.date_of_birth,
-      avatar: req.body.avatar,
-      appointments: {
-        upcoming: upcomingAppointments || [],
-        past: [],
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-
-      administrative_rights: false,
-    });
-
     try {
-      const hashedPassword = bcrypt.hash(req.body.password, 10);
+      const db = await connect();
 
-      newUser.password = await hashedPassword;
+      const upcomingAppointments = await checkIfNewUserHasBookedAsGuest(
+        req,
+        res
+      );
 
+      const newUser = new User({
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        email: req.body.email,
+        password: req.body.password,
+        phone_number: req.body.phone_number,
+        date_of_birth: req.body.date_of_birth,
+        avatar: req.body.avatar,
+        appointments: {
+          upcoming: upcomingAppointments || [],
+          past: [],
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        administrative_rights: false,
+      });
+
+      // Await the password hashing to make sure it's done
+      newUser.password = await bcrypt.hash(req.body.password, 10);
+
+      // Insert the new user into the database
       const addNewUser = await db
         .collection("registered_users")
         .insertOne(newUser);
 
-      const user = await db
+      // Query the database to ensure we have the complete user
+      const user: any = await db
         .collection("registered_users")
         .findOne({ _id: new ObjectId(addNewUser.insertedId) });
 
+      // Update any guest appointments with the new user ID
       if (upcomingAppointments) {
         for (const appointmentId of upcomingAppointments) {
           await db.collection("appointments").updateOne(
@@ -148,7 +184,20 @@ router.post(
           );
         }
       }
-      res.status(201).json(user);
+
+      // Ensure the user is fully logged in after registration
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({
+            message:
+              "Registration successful, but there was an issue logging you in.",
+            error: err,
+          });
+        }
+
+        // Send the logged-in user data back as the response
+        res.status(201).json(user);
+      });
     } catch (error) {
       res.status(500).json({
         message: "There was an error adding a new user",

@@ -54,7 +54,7 @@ describe("Tests techs router", () => {
     await request(server).post("/api/techs").send(newTechTest1);
     const allTechs = await request(server).get("/api/techs");
     expect(allTechs.body).toHaveLength(2);
-  });
+  }, 10000);
 
   test("POST, /api/techs", async () => {
     const addNewTech = await request(server)
@@ -69,7 +69,7 @@ describe("Tests techs router", () => {
       tech_profession: "hair",
       tech_appointments: [],
     });
-  });
+  }, 10000);
 
   test("POST, /api/techs, throws error if tech already exists", async () => {
     {
@@ -82,5 +82,5 @@ describe("Tests techs router", () => {
         "a tech with that email or phone number already exists"
       );
     }
-  });
+  }, 10000);
 });

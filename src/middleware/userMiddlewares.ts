@@ -32,25 +32,31 @@ export const checkIfNewUserHasBookedAsGuest = async (
       .collection("guest_users")
       .findOneAndDelete({ email: req.body.email });
 
-      return appointments.map((appointment) => appointment._id);
-
+    return appointments.map((appointment) => appointment._id);
   }
 };
 
-export const checkIfUserAlreadyExists = async (req: Request, res: Response, next: NextFunction) => {
+export const checkIfUserAlreadyExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const db = await connect();
 
-  const { email } = req.body
+  const { email } = req.body;
 
-  const userExists = await db.collection("registered_users").find({
-    email: email
-  }).toArray()
-if(userExists.length > 0) {
-  res.status(409).json({message: "a user with that email already exists"})
-} else {
-  next()
-}
-}
+  const userExists = await db
+    .collection("registered_users")
+    .find({
+      email: email,
+    })
+    .toArray();
+  if (userExists.length > 0) {
+    res.status(409).json({ message: "a user with that email already exists" });
+  } else {
+    next();
+  }
+};
 
 export const checkIfIdExists = async (
   req: Request,
@@ -59,19 +65,29 @@ export const checkIfIdExists = async (
 ) => {
   const id = req.params.id;
 
-  const db = await connect();
+  if (!id) {
+    return res.status(400).json({ message: "No ID provided" });
+  }
 
-  const allUsers = await db.collection("registered_users").find().toArray();
+  try {
+    const db = await connect();
+    const user = await db
+      .collection("registered_users")
+      .findOne({ _id: new ObjectId(id) });
 
-  const userWithIdExists = allUsers.some((a) => String(a._id) === id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: `The user with id ${id} does not exist` });
+    }
 
-  if (!id || !userWithIdExists) {
-    res.status(404).json({ message: `The user with id ${id} does not exist` });
-  } else {
-    next();
+    next(); // Proceed to the next middleware/route handler
+  } catch (error: any) {
+    res
+      .status(500)
+      .json({ message: "Error checking user ID", error: error.message });
   }
 };
-
 export const checkIfUserProvidedBody = (
   req: Request,
   res: Response,
@@ -102,7 +118,11 @@ export const checkUpdateBody = (
   }
 };
 
-export const checkIfUserHasUpcomingAppointments = async (req: Request,res: Response,next: NextFunction) => {
+export const checkIfUserHasUpcomingAppointments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const db = await connect();
   try {
     const userAppointments = await db
@@ -110,14 +130,14 @@ export const checkIfUserHasUpcomingAppointments = async (req: Request,res: Respo
       .find({ user_id: new ObjectId(req.params.id) })
       .toArray();
 
-    if(userAppointments.length) {
+    if (userAppointments.length) {
       res.status(409).json({
-        message: "Cannot delete account with upcoming appointment"
-      })
+        message: "Cannot delete account with upcoming appointment",
+      });
     } else {
-      next()
+      next();
     }
-  }catch(error) {
-    next(error)
+  } catch (error) {
+    next(error);
   }
-}
+};
